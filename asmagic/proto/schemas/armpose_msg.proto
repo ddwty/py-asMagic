@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+package Armpose;
+
+// 3D position vector
+message Vec3 {
+   float x = 1;
+   float y = 2;
+   float z = 3;
+}
+
+// Quaternion rotation (x, y, z, w)
+message Quat {
+   float x = 1;
+   float y = 2;
+   float z = 3;
+   float w = 4;
+}
+
+// Joint transform (position + rotation)
+message JointTransform {
+   Vec3 position = 1;
+   Quat rotation = 2;
+}
+
+message Armpose
+{
+   double timestamp = 1;
+   
+   // Rotation and angle data (legacy arm-specific data)
+   float left_arm_rotation = 2;
+   float left_arm_angle = 3;
+   float left_forearm_rotation = 4;
+   float left_forearm_angle = 5;
+
+   float right_arm_rotation = 6;
+   float right_arm_angle = 7;
+   float right_forearm_rotation = 8;
+   float right_forearm_angle = 9;
+   
+   // Joint positions relative to spine_7_joint (legacy arm positions)
+   Vec3 right_shoulder_1_pos = 10;
+   Vec3 right_arm_pos = 11;
+   Vec3 right_forearm_pos = 12;
+   Vec3 left_shoulder_1_pos = 13;
+   Vec3 left_arm_pos = 14;
+   Vec3 left_forearm_pos = 15;
+   
+   // --- Full Skeleton Data (91 Joints) ---
+   // Map of joint name to transform data
+   // Key: joint name (e.g., "hips_joint", "left_hand_joint")
+   // Value: JointTransform (position + rotation)
+   // NOTE: ID 22 used to avoid conflict with legacy flat arrays (ID 20, 21)
+   // Legacy field remains body-model space for existing receivers.
+   map<string, JointTransform> joints = 22;
+   map<string, JointTransform> local_joints = 23;
+   map<string, string> joint_parents = 24;
+   JointTransform body_transform = 25;
+   map<string, bool> tracked_joints = 26;
+   // tracking, searching, interrupted, unavailable, failed
+   string tracking_state = 27;
+   double source_timestamp = 28; // ARFrame.timestamp, monotonic seconds
+   string session_id = 29; // World origin is valid only within this session.
+   float estimated_scale = 30;
+} 

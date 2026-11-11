@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="864pt" height="504pt" viewBox="0 0 864 504" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:date>2026-10-10T19:21:54.084779</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.9.4, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 504 
+L 864 504 
+L 864 0 
+L 0 0 
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 276.875725 129.501069 
+L 600.051298 129.501069 
+L 600.051298 371.882748 
+L 276.875725 371.882748 
+z
+" clip-path="url(#p1b7bc61c1a)" style="fill: #f3f7fa; stroke: #b9c8d2; stroke-width: 1.5; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_3">
+    <path d="M 278.875552 129.501069 
+Q 451.390968 129.501069 622.117531 129.501069 
+" clip-path="url(#p1b7bc61c1a)" style="fill: none; stroke: #203344; stroke-width: 1.6; stroke-linecap: round"/>
+    <path d="M 616.117531 126.501069 
+L 622.117531 129.501069 
+L 616.117531 132.501069 
+z
+" clip-path="url(#p1b7bc61c1a)" style="fill: #203344; stroke: #203344; stroke-width: 1.6; stroke-linecap: round"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 276.875725 131.504631 
+Q 276.875725 261.60268 276.875725 389.911876 
+" clip-path="url(#p1b7bc61c1a)" style="fill: none; stroke: #203344; stroke-width: 1.6; stroke-linecap: round"/>
+    <path d="M 279.875725 383.911876 
+L 276.875725 389.911876 
+L 273.875725 383.911876 
+z
+" clip-path="url(#p1b7bc61c1a)" style="fill: #203344; stroke: #203344; stroke-width: 1.6; stroke-linecap: round"/>
+   </g>
+   <g id="line2d_1">
+    <path d="M 357.669618 129.501069 
+L 357.669618 274.930076 
+" clip-path="url(#p1b7bc61c1a)" style="fill: none; stroke-dasharray: 5.18,2.24; stroke-dashoffset: 0; stroke: #1769aa; stroke-width: 1.4"/>
+   </g>
+   <g id="line2d_2">
+    <path d="M 276.875725 274.930076 
+L 357.669618 274.930076 
+" clip-path="url(#p1b7bc61c1a)" style="fill: none; stroke-dasharray: 5.18,2.24; stroke-dashoffset: 0; stroke: #1769aa; stroke-width: 1.4"/>
+   </g>
+   <g id="text_1">
+    <text style="fill: #203344; font: 12px 'DejaVu Sans'; text-anchor: end" x="272.028092" y="120.945902" transform="rotate(-0 272.028092 120.945902)">(0, 0)</text>
+   </g>
+   <g id="text_2">
+    <text style="fill: #203344; font: 14px 'DejaVu Sans'; text-anchor: start" x="606.514809" y="120.529964" transform="rotate(-0 606.514809 120.529964)">x</text>
+   </g>
+   <g id="text_3">
+    <text style="fill: #203344; font: 14px 'DejaVu Sans'; text-anchor: end" x="268.796336" y="400.699187" transform="rotate(-0 268.796336 400.699187)">y</text>
+   </g>
+   <g id="text_4">
+    <text style="fill: #203344; font: 12px 'DejaVu Sans'; text-anchor: end" x="600.051298" y="389.484232" transform="rotate(-0 600.051298 389.484232)">(1, 1)</text>
+   </g>
+   <g id="text_5">
+    <text style="fill: #566b7c; font: 12px 'DejaVu Sans'; text-anchor: middle" x="438.463511" y="107.686718" transform="rotate(-0 438.463511 107.686718)">W = frame.image_width (pixels)</text>
+   </g>
+   <g id="text_6">
+    <text style="fill: #566b7c; font: 12px 'DejaVu Sans'" transform="translate(247.702543 348.471283) rotate(-90)">H = frame.image_height (pixels)</text>
+   </g>
+   <g id="PathCollection_1">
+    <defs>
+     <path id="mce67a506ca" d="M 0 5 
+C 1.326016 5 2.597899 4.473168 3.535534 3.535534 
+C 4.473168 2.597899 5 1.326016 5 0 
+C 5 -1.326016 4.473168 -2.597899 3.535534 -3.535534 
+C 2.597899 -4.473168 1.326016 -5 0 -5 
+C -1.326016 -5 -2.597899 -4.473168 -3.535534 -3.535534 
+C -4.473168 -2.597899 -5 -1.326016 -5 0 
+C -5 1.326016 -4.473168 2.597899 -3.535534 3.535534 
+C -2.597899 4.473168 -1.326016 5 0 5 
+z
+" style="stroke: #1769aa"/>
+    </defs>
+    <g clip-path="url(#p1b7bc61c1a)">
+     <use xlink:href="#mce67a506ca" x="357.669618" y="274.930076" style="fill: #1769aa; stroke: #1769aa"/>
+    </g>
+   </g>
+   <g id="text_7">
+    <text style="fill: #1769aa; font: 13px 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', 'Computer Modern Typewriter', 'Andale Mono', 'Nimbus Mono L', 'Courier New', 'Courier', 'Fixed', 'Terminal', monospace; text-anchor: start" x="368.980763" y="278.551795" transform="rotate(-0 368.980763 278.551795)">joint.xy = (0.25, 0.60)</text>
+   </g>
+  </g>
+  <g id="text_8">
+   <text style="fill: #203344; font: 700 23px 'DejaVu Sans'; text-anchor: start" x="47.52" y="37.636406" transform="rotate(-0 47.52 37.636406)">Hand joint coordinates</text>
+  </g>
+  <g id="text_9">
+   <text style="fill: #566b7c; font: 11px 'DejaVu Sans'; text-anchor: start" x="47.52" y="56.238281" transform="rotate(-0 47.52 56.238281)">All 21 joints use the original camera image. x and y range from 0 to 1.</text>
+  </g>
+  <g id="text_10">
+   <text style="fill: #203344; font: 14px 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', 'Computer Modern Typewriter', 'Andale Mono', 'Nimbus Mono L', 'Courier New', 'Courier', 'Fixed', 'Terminal', monospace; text-anchor: middle" x="432" y="443.52" transform="rotate(-0 432 443.52)">pixels = (x * W, y * H)</text>
+  </g>
+  <g id="text_11">
+   <text style="fill: #566b7c; font: 11px 'DejaVu Sans'; text-anchor: middle" x="432" y="471.24" transform="rotate(-0 432 471.24)">Example only: 640 x 480 image  -&gt;  (0.25, 0.60) becomes (160, 288) pixels</text>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="p1b7bc61c1a">
+   <rect x="218.704122" y="90.72" width="426.591756" height="317.52"/>
+  </clipPath>
+ </defs>
+</svg>

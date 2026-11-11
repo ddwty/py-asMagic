@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package Watch;
+
+message Watch
+{
+   repeated float attitude = 1;
+   repeated float rotation_rate = 2;
+   repeated float gravity = 3;
+   repeated float acceleration = 4;
+} 

@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Python ${{ matrix.python }} / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python: ['3.8', '3.10', '3.12', '3.14']
+        include:
+          - os: macos-latest
+            python: '3.12'
+          - os: windows-latest
+            python: '3.12'
+    env:
+      MPLBACKEND: Agg
+      PYTHONUTF8: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - name: Install SDK and development tools
+        run: python -m pip install -e ".[dev]"
+      - name: Run regression tests
+        run: python -m pytest -q
+      - name: Check documentation sources
+        run: python tools/sync_documentation_examples.py --check
+      - name: Check repository content and local links
+        run: python tools/check_repository.py
+
+  package:
+    name: Build and install distributions
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - name: Install packaging tools
+        run: python -m pip install build twine
+      - name: Build wheel and source distribution
+        run: python -m build
+      - name: Validate distribution metadata
+        run: python -m twine check dist/*
+      - name: Install wheel outside the checkout
+        shell: bash
+        run: |
+          python -m venv "$RUNNER_TEMP/asmagic-wheel"
+          "$RUNNER_TEMP/asmagic-wheel/bin/python" -m pip install dist/*.whl
+          cd "$RUNNER_TEMP"
+          "$RUNNER_TEMP/asmagic-wheel/bin/python" -c "import asmagic; from asmagic import CameraDataSubscriber, ARDataSubscriber, IMUDataSubscriber, WatchIMUReceiver; print(asmagic.__version__)"
+          "$RUNNER_TEMP/asmagic-wheel/bin/asmagic-test" --list

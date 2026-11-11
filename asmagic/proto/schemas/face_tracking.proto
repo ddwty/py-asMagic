@@ -1,0 +1,121 @@
+syntax = "proto3";
+
+package Phone;
+
+import "hand_pose.proto";
+
+message FaceImageLocation
+{
+   // Normalized camera-image coordinates use a top-left origin.
+   float center_x = 1;
+   float center_y = 2;
+   float width = 3;
+   float height = 4;
+}
+
+message FaceVector3
+{
+   // Position in meters. The parent field specifies the reference frame.
+   float x = 1;
+   float y = 2;
+   float z = 3;
+}
+
+message FaceQuaternion
+{
+   // Camera-relative orientation in x, y, z, w order.
+   float x = 1;
+   float y = 2;
+   float z = 3;
+   float w = 4;
+}
+
+message FaceBlendshapeCoefficient
+{
+   string name = 1;
+   float value = 2;
+}
+
+message FaceLandmark
+{
+   // ARKit face-mesh vertex index, or Vision region-local index.
+   uint32 index = 1;
+   // "mesh" for TrueDepth; Vision uses face_contour, left_eye, lips, etc.
+   string region = 2;
+   // Unrotated, unmirrored image, top-left origin. Points outside the image
+   // can exceed 0..1; consumers must clip, not clamp individual points.
+   float image_x = 3;
+   float image_y = 4;
+   // Present only for TrueDepth. Face-local meters, +X right, +Y up, +Z out
+   // of the face. Transform using camera_position_meters/camera_orientation.
+   FaceVector3 position_face_meters = 5;
+}
+
+enum FaceTrackingMode
+{
+   FACE_TRACKING_MODE_UNSPECIFIED = 0;
+   FACE_TRACKING_MODE_VISION = 1;
+   FACE_TRACKING_MODE_TRUE_DEPTH = 2;
+}
+
+message FaceTrackingFrame
+{
+   double source_timestamp = 1;
+   bool has_face = 2;
+   int32 image_width = 3;
+   int32 image_height = 4;
+   string image_orientation = 5;
+   FaceImageLocation image_location = 6;
+   // Present only when ARKit face tracking provides a metric position.
+   FaceVector3 camera_position_meters = 7;
+   // Quaternion orientation is present for ARKit and Vision face tracking.
+   FaceQuaternion camera_orientation = 8;
+   // Raw face movement coefficients; these are not emotion labels.
+   repeated FaceBlendshapeCoefficient blendshape_coefficients = 9;
+   // Hand observations are sent independently on 8101. Never reuse field 10.
+   reserved 10;
+   reserved "hand_pose";
+   repeated FaceLandmark landmarks = 11;
+   // Mesh topology references landmarks by vertex index, three per triangle.
+   repeated uint32 triangle_indices = 12 [packed = true];
+   FaceTrackingMode tracking_mode = 13;
+   uint64 sequence_number = 14;
+   // Changes when camera capture restarts; timestamps are monotonic seconds
+   // on the source device, not UTC and not synchronized to the receiver.
+   string session_id = 15;
+   uint32 schema_version = 16;
+   // Rotation needed to display the raw image, before optional UI mirroring.
+   // Uses CGImagePropertyOrientation values (1..8); data itself is unmirrored.
+   uint32 image_rotation = 17;
+}
+
+// Legacy combined message, retained for decoding older App packets only.
+// Current App output on 8102 uses FaceTrackingFrame and carries no hands.
+message FaceAndHandTrackingFrame
+{
+   double source_timestamp = 1;
+   bool has_face = 2;
+   int32 image_width = 3;
+   int32 image_height = 4;
+   string image_orientation = 5;
+   FaceImageLocation image_location = 6;
+   // Present only when ARKit face tracking provides a metric position.
+   FaceVector3 camera_position_meters = 7;
+   // Quaternion orientation is present for ARKit and Vision face tracking.
+   FaceQuaternion camera_orientation = 8;
+   // Raw face movement coefficients; these are not emotion labels.
+   repeated FaceBlendshapeCoefficient blendshape_coefficients = 9;
+   HandPoseFrame hand_pose = 10;
+   repeated FaceLandmark landmarks = 11;
+   // Mesh topology references landmarks by vertex index, three per triangle.
+   repeated uint32 triangle_indices = 12 [packed = true];
+   FaceTrackingMode tracking_mode = 13;
+   uint64 sequence_number = 14;
+   // Changes when camera capture restarts; timestamps are monotonic seconds
+   // on the source device, not UTC and not synchronized to the receiver.
+   string session_id = 15;
+   uint32 schema_version = 16;
+   // Rotation needed to display the raw image, before optional UI mirroring.
+   // Uses CGImagePropertyOrientation values (1..8); data itself is unmirrored.
+   uint32 image_rotation = 17;
+}

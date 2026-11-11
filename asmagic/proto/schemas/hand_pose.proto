@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package Phone;
+
+message HandPoseJoint
+{
+   string name = 1;
+   // Normalized in the unrotated, unmirrored camera image, with a top-left origin.
+   float x = 2;
+   float y = 3;
+   float confidence = 4;
+}
+
+message HandPoseHand
+{
+   float confidence = 1;
+   repeated HandPoseJoint joints = 2;
+}
+
+message HandPoseFrame
+{
+   // Source camera timestamp in seconds.
+   double source_timestamp = 1;
+   int32 image_width = 2;
+   int32 image_height = 3;
+   string image_orientation = 4;
+   uint32 unknown_hand_count = 5;
+   HandPoseHand left_hand = 6;
+   HandPoseHand right_hand = 7;
+}

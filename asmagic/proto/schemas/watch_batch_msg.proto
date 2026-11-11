@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package watch_batch;
+
+message Watch {
+    repeated float attitude = 1;      // 四元数姿态 [x, y, z, w]
+    repeated float rotation_rate = 2; // 角速度 [x, y, z] (rad/s)
+    repeated float gravity = 3;       // 重力向量 [x, y, z] (m/s²)
+    repeated float acceleration = 4;  // 用户加速度 [x, y, z] (m/s²)
+    double timestamp = 5;             // 时间戳
+}
+
+message WatchBatch {
+    repeated Watch frames = 1;        // 批次中的所有帧
+    double batch_timestamp = 2;       // 批次发送时间戳
+    int32 frame_count = 3;           // 帧数量
+}

@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package Imu;
+
+message Imu
+{
+   double timestamp = 1;
+   
+   message Accelerometer {
+      float x = 1;
+      float y = 2;
+      float z = 3;
+   }
+   Accelerometer accelerometer = 2;
+   
+   message Gyroscope {
+      float x = 1;
+      float y = 2;
+      float z = 3;
+   }
+   Gyroscope gyroscope = 3;
+   
+   message Magnetometer {
+      float x = 1;
+      float y = 2;
+      float z = 3;
+   }
+   Magnetometer magnetometer = 4;
+   
+   message Gravity {
+      float x = 1;
+      float y = 2;
+      float z = 3;
+   }
+   Gravity gravity = 5;
+   
+   message UserAcceleration {
+      float x = 1;
+      float y = 2;
+      float z = 3;
+   }
+   UserAcceleration user_acceleration = 6;
+
+   message Attitude {
+      float x = 1;
+      float y = 2;
+      float z = 3;
+      float w = 4;
+   }
+   Attitude attitude = 7;
+   
+} 

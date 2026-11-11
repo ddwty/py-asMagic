@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+package Phone;
+
+enum RGBCodec
+{
+   RGB_CODEC_UNSPECIFIED = 0;
+   RGB_CODEC_JPEG = 1;
+   RGB_CODEC_HEVC = 2;
+}
+
+message Phone
+{
+   // Legacy sender wall-clock timestamp. Kept unchanged for existing clients and recordings.
+   double timestamp = 1;
+   bytes color_img = 2;
+   bytes depth_img = 3;
+   int32 depth_width = 4;
+   int32 depth_height = 5;
+   repeated float local_pose = 6;
+   repeated float global_pose = 7;
+   repeated float velocity = 8;
+   repeated float camersIntrinsics = 9;
+
+   // Spatial-frame identity and ARKit observation time, in seconds from ARKit's source clock.
+   uint64 frame_id = 10;
+   double source_timestamp = 11;
+
+   // Pixel dimensions of the encoded RGB frame.
+   int32 rgb_width = 13;
+   int32 rgb_height = 14;
+
+   // One ARConfidenceLevel raw value per depth pixel; dimensions match depth_img.
+   bytes depth_confidence = 15;
+
+   // Meters represented by one UInt16 unit in depth_img (currently 0.0001).
+   float depth_meters_per_unit = 16;
+
+   // ARSession that produced this frame; matches ARParticipantAnchor.sessionIdentifier.
+   string session_identifier = 17;
+
+   // Canonical ARSession identifier for a successfully shared ARKit world.
+   // Empty when this frame is only in the sender's local world coordinate system.
+   string shared_world_identifier = 18;
+
+   // True only when global_pose is expressed in shared_world_identifier coordinates.
+   bool global_pose_is_shared = 19;
+
+   // Clockwise quarter turns required to display the sensor-oriented RGB and depth images upright.
+   int32 image_rotation_quarter_turns_clockwise = 20;
+
+   // Older senders leave this unset; receivers must interpret UNSPECIFIED as JPEG.
+   RGBCodec rgb_codec = 21;
+
+   // HEVC VPS, SPS, and PPS NAL units in that order. Sent with every frame so any
+   // frame can be decoded independently after ZMQ or latest-frame queue drops.
+   repeated bytes rgb_codec_config = 22;
+
+   // True for independently decodable HEVC frames. JPEG frames are always independent.
+   bool rgb_is_key_frame = 23;
+
+   // Length-prefix size used before each HEVC NAL unit in color_img (VideoToolbox emits 4).
+   int32 rgb_nal_unit_header_length = 24;
+}

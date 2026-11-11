@@ -1,0 +1,67 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "asmagic"
+version = "1.0.2"
+description = "Receive asMagic camera, motion, controller, body, hand and face protobuf streams"
+readme = "README.md"
+requires-python = ">=3.8"
+authors = [{name = "ASMagic Team"}]
+license = {text = "MIT"}
+keywords = ["ar", "imu", "sensor", "zmq", "protobuf", "streaming", "face-tracking", "hand-tracking"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Topic :: Scientific/Engineering",
+]
+dependencies = [
+  "numpy>=1.20.0",
+  "pyzmq>=22.0.0",
+  "protobuf>=4.25.0",
+  "opencv-python>=4.5.0",
+  "Pillow>=8.0.0",
+  "matplotlib>=3.5",
+  "av>=12.0.0",
+]
+
+[project.optional-dependencies]
+# Compatibility aliases for older installation commands; all runtime features
+# are already included in the default dependencies above.
+hevc = []
+plot = []
+dev = ["pytest>=7.0.0", "build>=1.0.0", "twine>=4.0.0"]
+
+[project.scripts]
+asmagic-test = "asmagic.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/ddwty/py-asMagic"
+Documentation = "https://github.com/ddwty/py-asMagic#readme"
+Repository = "https://github.com/ddwty/py-asMagic"
+Issues = "https://github.com/ddwty/py-asMagic/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["asmagic*"]
+
+[tool.setuptools]
+license-files = ["LICENSE"]
+
+[tool.setuptools.package-data]
+asmagic = ["py.typed", "proto/*.py", "proto/*.json", "proto/schemas/*.proto"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"

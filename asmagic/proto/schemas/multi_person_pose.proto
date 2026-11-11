@@ -1,0 +1,49 @@
+syntax = "proto3";
+package asmagic.body.v1;
+
+// Dedicated port 8104. Schema version 1. All coordinates are meters.
+// Source clock: ARFrame monotonic seconds; timestamp: capture-time Unix seconds.
+message Vector3 { float x = 1; float y = 2; float z = 3; }
+message Quaternion { float x = 1; float y = 2; float z = 3; float w = 4; }
+message RigidTransform { Vector3 position = 1; Quaternion rotation = 2; }
+message Landmark {
+  uint32 index = 1; // MediaPipe Pose Landmarker indices 0...32, anatomical left/right
+  float image_x = 2; // raw unmirrored image normalized coordinates; top-left, x right, y down
+  float image_y = 3;
+  Vector3 model = 4; // learned hip-relative estimate, rotated into AR camera axes
+  Vector3 local = 5; // midpoint hips origin; +X subject left, +Y torso up, +Z forward
+  Vector3 camera = 6; // optional fitted position, +X right, +Y up, camera looks -Z
+  Vector3 world = 7; // optional ARKit session world position, gravity aligned, Y up
+  float visibility = 8;
+  float presence = 9;
+  optional float measured_depth = 10; // optical-axis scene surface depth, NOT joint-center truth
+}
+message Person {
+  string id = 1; // session-scoped motion ID, never array index
+  uint32 label = 2;
+  repeated Landmark landmarks = 3; // always 33, including low-confidence estimates
+  RigidTransform body_camera = 4; // optional, absent when registration is unreliable
+  RigidTransform body_world = 5;
+  float metric_scale = 6;
+  optional float fit_rms = 7; // meters, inlier registration residual
+  uint32 depth_joint_count = 8;
+  bool identity_ambiguous = 9;
+  bool robot_eligible = 10;
+}
+message MultiPersonPoseFrame {
+  uint32 schema_version = 1;
+  string session_id = 2;
+  string world_frame_id = 3; // changes on session reset/interruption; never mix worlds
+  uint64 sequence = 4;
+  double source_timestamp = 5;
+  double timestamp = 6;
+  repeated float camera_world_transform = 7; // 16, column-major rigid camera-to-world
+  repeated float camera_intrinsics = 8; // 9, column-major, raw image pixels
+  uint32 image_width = 9;
+  uint32 image_height = 10;
+  string camera_tracking = 11; // normal, limited, unavailable, interrupted, failed, stopped
+  bool has_scene_depth = 12;
+  repeated Person people = 13;
+  string selected_person_id = 14; // empty means no robot target
+  string model = 15;
+}

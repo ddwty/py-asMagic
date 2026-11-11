@@ -1,0 +1,424 @@
+{
+  "groups": [
+    {
+      "id": "camera",
+      "title": "Camera Streaming Examples",
+      "intro": "Receive RGB video from the camera lens selected on your iPhone. Install `asmagic` 1.0.2 or newer.\n\n## Set up the iPhone\n\n- Connect your iPhone and computer to the same network.\n- Open **Stream**. It starts in **Camera + AR**, so select **Camera** for this receiver.\n- Choose a lens. **0.5×** selects the ultra-wide camera on supported iPhones. Use the camera-switch button for the front camera.\n- Open **Send settings**, choose a **Resolution**, then enable **Stream Video**.\n- Copy the displayed **IP address** into `IPHONE_IP` in the example.\n\nThe flashlight button controls the current rear camera when supported.\n\n## Resolution and orientation\n\nThe resolution list shows the pixel dimensions sent to Python. Available choices follow the selected lens and device orientation. A 1920 × 1080 camera frame offers 320 × 180, 640 × 360, 960 × 540, 1280 × 720 and 1920 × 1080 px. Portrait output swaps width and height. Check `data.rgb_width`, `data.rgb_height` or `data.color_upright.shape` after changing lenses or resolution.\n\nThe sender rotates images and mirrors the front camera to match its preview. Frames use JPEG or HEVC, and `color_bytes` returns the compressed payload. The SDK decodes either format into RGB pixels in `data.color_array`. Use `data.color_upright` to apply rotation metadata or `data.show_image()` to display an upright image.\n\n`CameraDataSubscriber.receive()` returns one `CameraFrame`. Its `has_color_image`, `color_bytes`, `color_array` and `color_upright` fields match the `ARFrame` image API. Camera uses port 8105; AR uses port 8000. Camera frames have no pose, intrinsics or depth.\n\n## Frame data\n\n| Field | Value |\n|---|---|\n| `color_array`, `color_upright` | RGB `uint8` NumPy array shaped `(height, width, 3)`, or `None` while waiting for a decodable image; same access as AR frames |\n| `image`, `image_upright` | Backward-compatible aliases for `color_array` and `color_upright` |\n| `rgb_width`, `rgb_height` | Encoded width and height in pixels; `width` and `height` are aliases |\n| `timestamp` | iPhone wall-clock time in seconds |\n| `source_timestamp` | Monotonic camera capture time in seconds |\n| `frame_id` | Frame sequence number, which restarts when the sender changes lens, resolution or session |\n| `color_bytes` | Encoded JPEG or HEVC bytes; `image_bytes` is an alias |\n| `has_color_image` | Whether the frame contains encoded color image bytes |\n| `protobuf` | Original message for advanced inspection |\n\n`CameraDataSubscriber(ip, port=8105, hwm=32, conflate=False, verbose=False)` supports context management, `receive()`, `receive(timeout=...)`, iteration and `close()`. A timeout is in milliseconds and returns `None`. `subscribe(\"camera\", ip)` selects the same receiver.\n\nThe receiver decodes HEVC packets in order. `conflate=True` keeps the latest decoded frame for a responsive preview. Continue receiving after a lens or resolution change while the next keyframe arrives. The examples below keep the video window responsive during a pause and release their receiver when stopped.\n\n```bash\npython -m pip install --upgrade \"asmagic>=1.0.2\"\n```\n"
+    },
+    {
+      "id": "ar",
+      "title": "AR Data Receiving Examples",
+      "intro": "Camera images, depth, pose and velocity."
+    },
+    {
+      "id": "imu",
+      "title": "IMU Data Receiving Examples",
+      "intro": "iPhone acceleration, angular velocity and magnetic field."
+    },
+    {
+      "id": "joystick",
+      "title": "Joystick Receiving Examples",
+      "intro": "On-screen sticks and buttons, or a connected game controller."
+    },
+    {
+      "id": "airpods",
+      "title": "AirPods Receiving Examples",
+      "intro": "AirPods head rotation."
+    },
+    {
+      "id": "body",
+      "title": "Body Tracking Receiving Examples",
+      "intro": "Read complete ARKit or MediaPipe body data through the same people, named-joint and array API. See [the illustrated body guide](../body-tracking.md) for coordinates, identity and exact formats."
+    },
+    {
+      "id": "upper_body",
+      "title": "Upper Body Receiving Examples",
+      "intro": "2D upper-body joints and angles."
+    },
+    {
+      "id": "hand",
+      "title": "Hand Tracking Receiving Examples",
+      "intro": "Hand joints from Stream or Face and Hand Tracking. Read `frame.left.index.tip` or `frame.right.thumb.tip` after checking hand and joint presence.\n\n[Left/right, all 21 joint locations and window API](../hands.md)\n\n![Left and right hand joint definitions](../assets/hand-joint-map.png)\n\n![Normalized hand coordinates in the raw camera image](../assets/hand-reading-flow.png)"
+    },
+    {
+      "id": "face",
+      "title": "Face Data Receiving Examples",
+      "intro": "Face points, movement coefficients and mesh. Hands use HandPoseDataSubscriber.\n\n[All face fields, Python types, 52 coefficient definitions and diagrams](../face-and-hands.md)"
+    },
+    {
+      "id": "claw",
+      "title": "Gripper Receiving Examples",
+      "intro": "Gripper commands and reported motor state."
+    },
+    {
+      "id": "watch",
+      "title": "Watch IMU Receiving Examples",
+      "intro": "Watch motion samples received on your computer."
+    },
+    {
+      "id": "common",
+      "title": "Common Receiving API Examples",
+      "intro": "Receiving, processing and saving frames."
+    },
+    {
+      "id": "plotting",
+      "title": "Skeleton Plotting API Examples",
+      "intro": "Display or save received tracking frames."
+    },
+    {
+      "id": "legacy",
+      "title": "Legacy Receiving Examples",
+      "intro": "Receivers for explicitly configured older publishers."
+    }
+  ],
+  "examples": [
+    {
+      "group": "camera",
+      "file": "camera/00_receive_image_data.py",
+      "title": "Read camera image data",
+      "note": "Read frame metadata and access the encoded image bytes."
+    },
+    {
+      "group": "camera",
+      "file": "camera/01_preview.py",
+      "title": "Live video preview",
+      "note": "Press Q or Escape in the video window to close it. Ctrl-C stops the receiver from the terminal."
+    },
+    {
+      "group": "camera",
+      "file": "camera/02_rgb_arrays.py",
+      "title": "Read RGB arrays and timestamps",
+      "note": "Read the RGB image in received orientation using the same `color_array` property as AR frames. Ctrl-C stops receiving."
+    },
+    {
+      "group": "camera",
+      "file": "camera/03_save_image.py",
+      "title": "Save one image",
+      "note": "Save camera.png in the current directory. The script waits up to five seconds for a decoded frame."
+    },
+    {
+      "group": "ar",
+      "file": "ar/01_continuous.py",
+      "title": "Continuous AR data reading",
+      "note": "Print RGB, depth, confidence, poses, intrinsics and frame information. frame.depth keeps the original uint16 values. Missing image arrays are None."
+    },
+    {
+      "group": "ar",
+      "file": "ar/03_display_images.py",
+      "title": "Optionally display color and depth",
+      "note": "Choose color and depth with show_images(). ESC closes the windows."
+    },
+    {
+      "group": "ar",
+      "file": "ar/04_image_arrays.py",
+      "title": "Process RGB, depth and confidence arrays",
+      "note": "Arrays retain raw orientation. frame.depth keeps the original uint16 values; missing images are None."
+    },
+    {
+      "group": "ar",
+      "file": "ar/05_pose_matrices.py",
+      "title": "Positions, quaternions and matrices",
+      "note": "Pose translation is in meters; rotation is [qx, qy, qz, qw]."
+    },
+    {
+      "group": "ar",
+      "file": "ar/07_metadata.py",
+      "title": "Frame and session information",
+      "note": "Print capture, session and image metadata."
+    },
+    {
+      "group": "ar",
+      "file": "ar/08_frame_fields.py",
+      "title": "Read image and pose fields",
+      "note": "Read all values from one received frame."
+    },
+    {
+      "group": "imu",
+      "file": "imu/01_all_sensors.py",
+      "title": "Read all available IMU sensors",
+      "note": "Acceleration: G. Angular velocity: rad/s. Magnetic field: μT."
+    },
+    {
+      "group": "joystick",
+      "file": "joystick/03_named_controls.py",
+      "title": "Read named controller controls",
+      "note": "Receive one frame and read sticks and named buttons."
+    },
+    {
+      "group": "joystick",
+      "file": "joystick/02_full_controller.py",
+      "title": "All named controller data",
+      "note": "Sticks, named buttons, analog triggers, status and motion."
+    },
+    {
+      "group": "joystick",
+      "file": "joystick/01_sticks_and_buttons.py",
+      "title": "Old API: sticks and numbered buttons",
+      "note": "Existing numbered button fields remain supported."
+    },
+    {
+      "group": "airpods",
+      "file": "airpods/01_rotation.py",
+      "title": "AirPods rotation quaternion",
+      "note": "Rotation is a quaternion in x/y/z/w order."
+    },
+    {
+      "group": "body",
+      "file": "body/01_all_joints.py",
+      "title": "Read every person and all native joints",
+      "note": "Select the App recognition model. Receive once, then read all people and their complete skeletons."
+    },
+    {
+      "group": "body",
+      "file": "body/02_named_joints.py",
+      "title": "Read shoulders, elbows, wrists, hips, knees and ankles",
+      "note": "Read twelve named joints on both sides of each person. Print body/world positions, rotations and quality; unavailable data is None."
+    },
+    {
+      "group": "body",
+      "file": "body/03_coordinate_spaces.py",
+      "title": "Read skeleton arrays and compare body/world positions",
+      "note": "Print all twelve common rows with names, positions, rotations and availability masks. Use the default layout to retain all 33 MediaPipe or 91 ARKit joints."
+    },
+    {
+      "group": "body",
+      "file": "body/04_optional_skeleton.py",
+      "title": "Display all people in separate skeleton panels",
+      "note": "SHOW_SKELETON selects plotting. Each local body has its own origin and panel; the receiver preserves every native node."
+    },
+    {
+      "group": "upper_body",
+      "file": "upper_body/01_relative_joints.py",
+      "title": "Upper-body joints, angles and detection metadata",
+      "note": "The upper_body message contains neck, relative arm joints and angles. It is None when absent."
+    },
+    {
+      "group": "upper_body",
+      "file": "upper_body/02_optional_skeleton.py",
+      "title": "Enable or disable the upper-body skeleton",
+      "note": "Display the received frame. Close the window or press Ctrl-C to finish."
+    },
+    {
+      "group": "hand",
+      "file": "hand/01_both_hands.py",
+      "title": "Read all joints from both hands",
+      "note": "Print all 21 named joints separately for the left and right hand, including the wrist and every finger. Missing hands and joints are reported explicitly."
+    },
+    {
+      "group": "hand",
+      "file": "hand/02_named_joints_and_pixels.py",
+      "title": "Wrist and all five fingertips in image coordinates",
+      "note": "Read the wrist and all five fingertips of both hands, then convert normalized coordinates to pixels using image dimensions from the same frame."
+    },
+    {
+      "group": "hand",
+      "file": "hand/04_joint_arrays.py",
+      "title": "Read all hand joints as arrays",
+      "note": "Print names, points, confidences and validity separately for each hand, then read every row and select present joints with the validity mask."
+    },
+    {
+      "group": "hand",
+      "file": "hand/03_optional_skeleton.py",
+      "title": "Enable or disable both hand skeletons",
+      "note": "Use receive(timeout=50) so the window handles events even without new data. A timeout returns None; an empty hand observation is still a HandPoseFrame. Close the window or press Ctrl-C to finish."
+    },
+    {
+      "group": "face",
+      "file": "face/01_face.py",
+      "title": "Face observations and frame metadata",
+      "note": "Print face detection, points, expressions and pose."
+    },
+    {
+      "group": "face",
+      "file": "face/02_blendshapes.py",
+      "title": "All available facial movement coefficients",
+      "note": "Read all 52 named TrueDepth movement coefficients, including zeros. Dictionary values are Python float; missing channels return None with get(name)."
+    },
+    {
+      "group": "face",
+      "file": "face/03_metric_mesh.py",
+      "title": "Metric face vertices and triangle topology",
+      "note": "TrueDepth vertices are float32 face-local meters; uint32 triangles contain vertex IDs. Map IDs to array rows, then use the position and quaternion to transform vertices into camera coordinates."
+    },
+    {
+      "group": "face",
+      "file": "face/05_optional_plot.py",
+      "title": "Enable or disable the face plot",
+      "note": "Display the received frame. Close the window or press Ctrl-C to finish."
+    },
+    {
+      "group": "claw",
+      "file": "claw/01_first_gripper.py",
+      "title": "First gripper command and optional motor state",
+      "note": "angle is the App percent command. Optional motor state is printed as received."
+    },
+    {
+      "group": "claw",
+      "file": "claw/02_second_gripper.py",
+      "title": "Second gripper on a separate port",
+      "note": "The second gripper uses port 5401."
+    },
+    {
+      "group": "watch",
+      "file": "watch/01_batches.py",
+      "title": "Receive Watch HTTP batches continuously",
+      "note": "receive() returns one batch; batch.frames contains its motion samples."
+    },
+    {
+      "group": "watch",
+      "file": "watch/02_individual_samples.py",
+      "title": "Flatten batches into individual Watch samples",
+      "note": "Read each motion sample in the received batch."
+    },
+    {
+      "group": "watch",
+      "file": "watch/03_receive_methods.py",
+      "title": "Receive Watch samples",
+      "note": "Read motion samples from the received batch."
+    },
+    {
+      "group": "watch",
+      "file": "watch/04_payload_format_and_decode.py",
+      "title": "Select Watch payload format and decode a batch",
+      "note": "Select the format to match your Watch sender."
+    },
+    {
+      "group": "common",
+      "file": "common/07_receive_loop.py",
+      "title": "Receive one frame and read its fields",
+      "note": "receive() waits for a valid frame. Read all related fields from that frame; Ctrl-C stops and closes the receiver."
+    },
+    {
+      "group": "common",
+      "file": "common/01_options_timeout_and_cleanup.py",
+      "title": "Receiving with a timeout and status",
+      "note": "Use receive(timeout=1000); None means no valid frame arrived within 1000 milliseconds. Print status after receiving a frame."
+    },
+    {
+      "group": "common",
+      "file": "common/02_stream_callback.py",
+      "title": "Process a received frame",
+      "note": "Call your processing function with the received frame."
+    },
+    {
+      "group": "common",
+      "file": "common/03_named_stream_factory.py",
+      "title": "Discover streams and subscribe by name",
+      "note": "Choose a receiver with subscribe(stream_name, ip)."
+    },
+    {
+      "group": "common",
+      "file": "common/04_raw_protobuf.py",
+      "title": "Read raw Protobuf from a received frame",
+      "note": "Use frame.protobuf or receive a raw message with ProtobufSubscriber."
+    },
+    {
+      "group": "common",
+      "file": "common/05_save_protobuf_frame.py",
+      "title": "Save one received frame for offline decoding",
+      "note": "Wait for one frame, then save its reserialized Protobuf for offline decoding."
+    },
+    {
+      "group": "common",
+      "file": "common/06_decode_saved_frame.py",
+      "title": "Decode a saved typed frame without a socket",
+      "note": "Run the preceding save example first, then decode the saved data."
+    },
+    {
+      "group": "legacy",
+      "file": "legacy/01_magiclaw_combined.py",
+      "title": "Legacy combined MagiClaw publisher",
+      "note": "Requires an older combined publisher with a known port."
+    },
+    {
+      "group": "legacy",
+      "file": "legacy/02_watch_zmq.py",
+      "title": "Legacy Watch ZeroMQ publisher",
+      "note": "Requires an older Watch ZeroMQ publisher with a known port."
+    },
+    {
+      "group": "plotting",
+      "file": "plotting/01_manual_plotter.py",
+      "title": "Receive frames with an optional TrackingPlotter",
+      "note": "Display the received frame. Close the window or press Ctrl-C to finish."
+    },
+    {
+      "group": "plotting",
+      "file": "plotting/02_frame_plot.py",
+      "title": "frame.plot() or plot_tracking() with a shared window",
+      "note": "Display the received frame. Close the window or press Ctrl-C to finish."
+    },
+    {
+      "group": "plotting",
+      "file": "plotting/03_single_hand.py",
+      "title": "Plot a single Hand object",
+      "note": "Display the received frame. Close the window or press Ctrl-C to finish."
+    },
+    {
+      "group": "plotting",
+      "file": "plotting/04_save_without_window.py",
+      "title": "Save a real received skeleton without a window",
+      "note": "Save a received skeleton to PNG without opening a window."
+    },
+    {
+      "group": "face",
+      "file": "face/06_face_and_hands.py",
+      "title": "Receive hands from Face and Hand Tracking",
+      "note": "Run the face example in a second terminal to receive both outputs."
+    },
+    {
+      "group": "face",
+      "file": "face/07_field_types.py",
+      "title": "Inspect every face field and its Python type",
+      "note": "Print all FaceFrame fields, derived properties, array dtypes and shapes, bounding-box members and one landmark. A timeout returns None; a received no-face frame remains a FaceFrame."
+    },
+    {
+      "group": "face",
+      "file": "face/08_regions_and_box.py",
+      "title": "Read landmark regions and raw bounding-box pixels",
+      "note": "Group points by region without merging repeated Vision indices. Convert normalized bounding-box corners and points to continuous raw image pixels using the transmitted dimensions."
+    },
+    {
+      "group": "ar",
+      "file": "ar/09_intrinsics.py",
+      "title": "Scale intrinsics using verified reference dimensions",
+      "note": "Set REFERENCE_SIZE to the image size used for the intrinsics."
+    },
+    {
+      "group": "body",
+      "file": "body/05_person_id.py",
+      "title": "Keep one person by ID across frames",
+      "note": "Choose an initial track once. Look it up by ID; tracking loss does not substitute another person."
+    },
+    {
+      "group": "body",
+      "file": "body/06_image_landmarks.py",
+      "title": "Read all raw-image landmarks and pixels",
+      "note": "MediaPipe supplies 33 image coordinates per person. Pixel conversion uses the raw image dimensions."
+    },
+    {
+      "group": "ar",
+      "file": "ar/10_selected_fields.py",
+      "title": "Original camera intrinsics scaling example",
+      "note": "Scale fx, fy, cx and cy from 1920 x 1440 to 640 x 480."
+    },
+    {
+      "group": "ar",
+      "file": "ar/11_quick_start.py",
+      "title": "Quick Start AR receiving example",
+      "note": "AR quick start using direct frame fields."
+    },
+    {
+      "group": "ar",
+      "file": "ar/12_authored_continuous.py",
+      "title": "Authored AR continuous receiving example",
+      "note": "The AR guide retains this original top-level receiving loop; edit its IP before running."
+    },
+    {
+      "group": "imu",
+      "file": "imu/02_quick_start.py",
+      "title": "Original Quick Start IMU receiving example",
+      "note": "IMU quick start using direct frame fields."
+    }
+  ]
+}

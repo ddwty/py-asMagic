@@ -1,0 +1,26 @@
+name: Bug report
+description: Report a reproducible problem in the Python SDK.
+title: "[Bug] "
+body:
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Python, operating system, asmagic version, and companion app version if relevant.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Minimal reproduction
+      description: Include a small script and the app feature/output used. Remove private data.
+      render: python
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Expected and actual behavior
+      description: Include the relevant traceback or diagnostic output.
+    validations:
+      required: true

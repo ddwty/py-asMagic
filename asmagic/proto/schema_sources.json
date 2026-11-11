@@ -1,0 +1,73 @@
+{
+  "files": {
+    "phone_msg.proto": {
+      "source": "asmagic/proto/schemas/phone_msg.proto",
+      "sha256": "033ec73633bf174263fba0642b3df581c6e72f8eacc7a29725e45c78708f1ee9",
+      "origin": "asMagic companion app"
+    },
+    "joystick_msg.proto": {
+      "source": "asmagic/proto/schemas/joystick_msg.proto",
+      "sha256": "e4e2fd368c69929ceba4824105e574176dc3a1048ae46a2ad8199119a8c54fd0",
+      "origin": "asMagic companion app"
+    },
+    "body_pose_msg.proto": {
+      "source": "asmagic/proto/schemas/body_pose_msg.proto",
+      "sha256": "2aa844e9790e98bfd0180e640bc08a5ea7fd352d3737c5300c496fcdffb78ca4",
+      "origin": "asMagic companion app"
+    },
+    "armpose_msg.proto": {
+      "source": "asmagic/proto/schemas/armpose_msg.proto",
+      "sha256": "6a452148e79f10f0962c2ee0feeccfc53009141814c32bfe806f70fb0c92df5a",
+      "origin": "asMagic companion app"
+    },
+    "hand_pose.proto": {
+      "source": "asmagic/proto/schemas/hand_pose.proto",
+      "sha256": "f5922e1767422f416da9a6c18cc8e80f352fed183124c91a8b5062223581897d",
+      "origin": "asMagic companion app"
+    },
+    "face_tracking.proto": {
+      "source": "asmagic/proto/schemas/face_tracking.proto",
+      "sha256": "f8ee35741697e7328000c15e57cfe8b937d3be9a0e1a9da90262430db59d1054",
+      "origin": "asMagic companion app"
+    },
+    "claw_msg.proto": {
+      "source": "asmagic/proto/schemas/claw_msg.proto",
+      "sha256": "fe247ebb752593b5143c98f8a9572d597821d95020e9b5e52d8d6bc9187d6ddb",
+      "origin": "asMagic companion app"
+    },
+    "airpods_msg.proto": {
+      "source": "asmagic/proto/schemas/airpods_msg.proto",
+      "sha256": "12d189d9ff462856eb15bde788db648b2004b991d33c48c085fdbda7f3504a90",
+      "note": "Verified against current app airpods_msg.pb.swift.",
+      "origin": "asMagic legacy SDK"
+    },
+    "imu_msg.proto": {
+      "source": "asmagic/proto/schemas/imu_msg.proto",
+      "sha256": "4b6b2bcbf6cfdb36a5cb1e25efa4538fa8ab7a9b6f2da0362754f654fdd63969",
+      "note": "Fields 1-6 verified against app imu_msg.pb.swift. Legacy attitude field 7 retained; current sender leaves it absent.",
+      "origin": "asMagic legacy SDK"
+    },
+    "watch_msg.proto": {
+      "source": "asmagic/proto/schemas/watch_msg.proto",
+      "sha256": "02207d89485181da6efb076935cda24ddc5e4c4af147c93ae132603545fd0647",
+      "origin": "asMagic legacy SDK"
+    },
+    "watch_batch_msg.proto": {
+      "source": "asmagic/proto/schemas/watch_batch_msg.proto",
+      "sha256": "0b5d2f84bcfd9d9adf0b8ec21889c2d1371aa3af6d3c53f8c69b4c1451daa207",
+      "origin": "asMagic companion app"
+    },
+    "magiclaw_msg.proto": {
+      "source": "asmagic/proto/schemas/magiclaw_msg.proto",
+      "sha256": "e7df8f59f3d77c811ca29b30171f6409ff2c9099b1b071615e469fafe27809be",
+      "note": "Legacy combined-device schema; no active app port assigned.",
+      "origin": "asMagic legacy SDK"
+    },
+    "multi_person_pose.proto": {
+      "source": "asmagic/proto/schemas/multi_person_pose.proto",
+      "sha256": "b4c01a2990e292d0eb0fbebca086006d49ed68f023a8623e61bd16855134758b",
+      "origin": "asMagic companion app"
+    }
+  },
+  "description": "Checked-in protocol snapshots. Hashes cover the exact schema bytes distributed with the SDK."
+}

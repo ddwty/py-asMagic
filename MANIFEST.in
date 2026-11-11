@@ -1,0 +1,10 @@
+include README.md README.zh-CN.md CHANGELOG.md CONTRIBUTING.md LICENSE pyproject.toml
+include asmagic/py.typed
+recursive-include asmagic/proto *.py *.proto *.json
+recursive-include docs *.md *.png *.svg
+recursive-include examples *.py *.md *.json
+recursive-include tools *.py *.json
+recursive-include tests *.py *.bin *.json *.md
+prune build
+prune dist
+global-exclude __pycache__ *.py[cod] .DS_Store

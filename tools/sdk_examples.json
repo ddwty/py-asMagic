@@ -1,0 +1,33 @@
+{
+  "docs/device-testing.md": [
+    "body/04_optional_skeleton.py",
+    "hand/03_optional_skeleton.py"
+  ],
+  "docs/api.md": [
+    "common/04_raw_protobuf.py",
+    "body/02_named_joints.py",
+    "body/03_coordinate_spaces.py",
+    "hand/02_named_joints_and_pixels.py"
+  ],
+  "docs/hands.md": [
+    "hand/02_named_joints_and_pixels.py",
+    "hand/03_optional_skeleton.py"
+  ],
+  "docs/face-and-hands.md": [
+    "face/01_face.py",
+    "face/07_field_types.py",
+    "face/02_blendshapes.py",
+    "face/08_regions_and_box.py",
+    "face/03_metric_mesh.py",
+    "hand/01_both_hands.py",
+    "hand/02_named_joints_and_pixels.py"
+  ],
+  "docs/body-tracking.md": [
+    "body/01_all_joints.py",
+    "body/02_named_joints.py",
+    "body/03_coordinate_spaces.py",
+    "body/05_person_id.py",
+    "body/06_image_landmarks.py",
+    "body/04_optional_skeleton.py"
+  ]
+}

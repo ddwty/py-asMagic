@@ -1,0 +1,101 @@
+syntax = "proto3";
+
+package Joystick;
+
+message Vec2 {
+    float x = 1;
+    float y = 2;
+}
+
+message Vec3 {
+    float x = 1;
+    float y = 2;
+    float z = 3;
+}
+
+message Quat {
+    float x = 1;
+    float y = 2;
+    float z = 3;
+    float w = 4;
+}
+
+message FaceButtons {
+    bool triangle = 1;
+    bool square = 2;
+    bool cross = 3;
+    bool circle = 4;
+    float triangle_value = 5;
+    float square_value = 6;
+    float cross_value = 7;
+    float circle_value = 8;
+}
+
+message DPadButtons {
+    bool up = 1;
+    bool down = 2;
+    bool left = 3;
+    bool right = 4;
+    Vec2 axis = 5;
+}
+
+message ShoulderButtons {
+    bool l1 = 1;
+    bool r1 = 2;
+    float l1_value = 3;
+    float r1_value = 4;
+}
+
+message TriggerState {
+    float value = 1;
+    bool pressed = 2;
+}
+
+message TriggerButtons {
+    TriggerState l2 = 1;
+    TriggerState r2 = 2;
+}
+
+message StickButtons {
+    bool l3 = 1;
+    bool r3 = 2;
+}
+
+message SystemButtons {
+    bool menu = 1;
+    bool options = 2;
+    bool home = 3;
+    bool touchpad = 4;
+}
+
+message Motion {
+    bool sensors_active = 1;
+    Vec3 gravity = 2;
+    Vec3 user_acceleration = 3;
+    Vec3 rotation_rate = 4;
+    Quat attitude = 5;
+}
+
+message Joystick {
+    double timestamp = 1;
+
+    // Legacy fields kept for existing StickControlView receivers.
+    repeated float l_joystick_position = 2;
+    repeated float r_joystick_position = 3;
+    repeated bool button_pressed = 4;
+
+    // Full controller state for PS5 / DualSense and standard extended gamepads.
+    Vec2 left_stick = 5;
+    Vec2 right_stick = 6;
+    FaceButtons face_buttons = 7;
+    DPadButtons dpad = 8;
+    ShoulderButtons shoulders = 9;
+    TriggerButtons triggers = 10;
+    StickButtons stick_buttons = 11;
+    SystemButtons system_buttons = 12;
+    Motion motion = 13;
+    string controller_name = 14;
+    bool is_connected = 15;
+    float battery_level = 16;
+    bool is_charging = 17;
+}

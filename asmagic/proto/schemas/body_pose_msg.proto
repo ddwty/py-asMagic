@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package BodyPose;
+
+// 3D 位置坐标
+message Position3D {
+    float x = 1;
+    float y = 2;
+    float z = 3;
+}
+
+// 2D 位置坐标
+message Position2D {
+    float x = 1;
+    float y = 2;
+}
+
+// 关节角度信息
+message JointAngle {
+    float elbow_angle = 1;      // 肘部弯曲角度 (弧度)
+    float shoulder_angle = 2;   // 肩部与neck的夹角 (弧度)
+}
+
+// 单侧手臂数据
+message ArmData {
+    Position2D shoulder = 1;    // 肩膀相对于neck的位置
+    Position2D elbow = 2;       // 肘部相对于肩膀的位置
+    Position2D wrist = 3;       // 手腕相对于肘部的位置
+    JointAngle angles = 4;      // 关节角度
+}
+
+// 上半身姿态数据
+message UpperBodyPose {
+    Position2D neck = 1;        // Neck位置 (作为原点，通常是0,0)
+    ArmData left_arm = 2;       // 左臂数据
+    ArmData right_arm = 3;      // 右臂数据
+    float confidence = 4;       // 整体检测置信度
+    uint64 timestamp = 5;       // 时间戳 (毫秒)
+}
+
+// 完整的人体姿态消息
+message BodyPoseMessage {
+    UpperBodyPose upper_body = 1;   // 上半身姿态
+    string json_data = 2;           // JSON格式的数据备份
+    float detection_fps = 3;        // 检测帧率
+    uint64 frame_id = 4;           // 帧ID
+} 

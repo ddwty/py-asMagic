@@ -1,0 +1,44 @@
+# Python and local environments
+__pycache__/
+*.py[cod]
+*.so
+.venv/
+venv/
+ENV/
+env/
+.pytest_cache/
+.coverage
+.coverage.*
+.ruff_cache/
+.mypy_cache/
+.tox/
+.nox/
+coverage.xml
+htmlcov/
+reports/
+
+# Generated distributions
+build/
+dist/
+*.egg-info/
+.eggs/
+*.egg
+
+# Editors and operating systems
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Local credentials and device output
+.env
+.env.*
+.pypirc
+*.pem
+*.key
+*.log
+*.mp4
+*.mov
