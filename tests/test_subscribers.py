@@ -47,7 +47,9 @@ def test_original_methods_and_module_imports_still_exist():
                          ("joystickDataSubscriber", "JoystickDataSubscriber")]:
         cls = getattr(importlib.import_module("asmagic." + module), name)
         assert cls is getattr(asmagic, name)
-        params = inspect.signature(cls).parameters
+        # Python 3.8 may prefer Generic.__new__ when inspecting the class itself.
+        params = dict(inspect.signature(cls.__init__).parameters)
+        params.pop("self")
         assert list(params) == ["ip", "port", "hwm", "conflate", "verbose"]
         assert params["hwm"].default == (32 if cls is ARDataSubscriber else 1)
         assert params["conflate"].default is (False if cls is ARDataSubscriber else True)

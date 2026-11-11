@@ -3,6 +3,9 @@ import io
 from typing import Optional
 import numpy as np
 
+# FFmpeg's stable bit value; older supported PyAV releases omit its enum name.
+_AV_CODEC_FLAG_LOW_DELAY = 1 << 19
+
 
 def nal_units(data: bytes, header_length: int):
     if header_length not in (1, 2, 4):
@@ -67,7 +70,7 @@ class HEVCDecoder:
                 return None  # Join/recover at a key frame instead of showing grey concealment.
             self._decoder = av.CodecContext.create("hevc", "r")
             self._decoder.thread_count = 1
-            self._decoder.flags |= av.codec.context.Flags.low_delay
+            self._decoder.flags = int(self._decoder.flags) | _AV_CODEC_FLAG_LOW_DELAY
             self._decoder.options = {"err_detect": "explode"}
         annex_b = b"".join(b"\x00\x00\x00\x01" + unit
                            for unit in list(frame.rgb_codec_config) + units)

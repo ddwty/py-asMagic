@@ -67,8 +67,11 @@ def test_hevc_length_prefix_validation():
             list(nal_units(payload, length))
 
 
-def test_hevc_independent_frame_decode():
-    pytest.importorskip("av")
+@pytest.mark.parametrize("named_flags_available", [True, False])
+def test_hevc_independent_frame_decode(monkeypatch, named_flags_available):
+    av = pytest.importorskip("av")
+    if not named_flags_available:
+        monkeypatch.setattr(av.codec.context, "Flags", None)
     import json
     fixture = Path(__file__).parent / "fixtures"
     config = json.loads((fixture / "hevc_config.json").read_text())
@@ -198,7 +201,9 @@ def test_slow_display_only_replaces_decoded_hevc_frames(publisher, hevc_sequence
         socket.send(messages[index].SerializeToString())
     # Simulate a blocked GUI while the worker consumes I/P packets.
     with sub._pump._condition:
-        assert sub._pump._condition.wait_for(lambda: sub.received_frames >= 4, timeout=2)
+        assert sub._pump._condition.wait_for(
+            lambda: sub._pump._pending and sub._pump._pending[-1].frame_id == messages[3].frame_id,
+            timeout=2)
         assert len(sub._pump._pending) == 1
     frame = sub.receive(timeout=2000)
     assert frame.frame_id == messages[3].frame_id
@@ -209,7 +214,9 @@ def test_slow_display_only_replaces_decoded_hevc_frames(publisher, hevc_sequence
     for index in range(4, 8):
         socket.send(messages[index].SerializeToString())
     with sub._pump._condition:
-        assert sub._pump._condition.wait_for(lambda: sub.received_frames >= 8, timeout=2)
+        assert sub._pump._condition.wait_for(
+            lambda: sub._pump._pending and sub._pump._pending[-1].frame_id == messages[7].frame_id,
+            timeout=2)
     latest = sub.receive(timeout=2000)
     assert latest.frame_id == messages[7].frame_id
     assert np.abs(latest.color_array.astype(float) - expected[7]).mean() < 10

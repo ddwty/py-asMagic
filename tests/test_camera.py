@@ -127,7 +127,9 @@ def test_camera_hevc_reference_continuity_and_decoded_conflation(publisher, hevc
         message.session_identifier = ""
         socket.send(message.SerializeToString())
     with sub._pump._condition:
-        assert sub._pump._condition.wait_for(lambda: sub.received_frames >= 8, timeout=2)
+        assert sub._pump._condition.wait_for(
+            lambda: sub._pump._pending and sub._pump._pending[-1].frame_id == messages[7].frame_id,
+            timeout=2)
         assert len(sub._pump._pending) == 1
     frame = sub.receive(timeout=2000)
     assert frame.frame_id == 8 and frame._decoded_video_frame is not None

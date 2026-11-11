@@ -5,6 +5,7 @@
 - Publish the SDK source at `ddwty/py-asMagic` with updated project links, English and Chinese quick starts, and contribution instructions.
 - Add CI for regression tests, documentation consistency, package builds and wheel installation.
 - Make documentation generation independent of external checkouts.
+- Fix HEVC decoding with supported PyAV versions that omit the named low-delay codec flag.
 
 ## 1.0.2 — 2026-11-03
 
