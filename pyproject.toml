@@ -48,7 +48,7 @@ asmagic-test = "asmagic.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/ddwty/py-asMagic"
-Documentation = "https://github.com/ddwty/py-asMagic#readme"
+Documentation = "https://doc.ancoraspring.com/asmagic/python-sdk/receiving-streamed-data"
 Repository = "https://github.com/ddwty/py-asMagic"
 Issues = "https://github.com/ddwty/py-asMagic/issues"
 
