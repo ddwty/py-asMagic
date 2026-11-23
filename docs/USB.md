@@ -177,9 +177,12 @@ protobuf ports use `ProtobufSubscriber("usb", port, message_type)`.
 
 On 2026-11-23, iPhone 17 Pro 1 → Raspberry Pi USB request/reply succeeded;
 IMU reception measured 601 packets in 10 seconds (about 60 Hz). The SDK also
-decoded 60 actual IMU frames through the Pi broker. Windows and direct Mac
-iPhone USB data, Watch hardware, camera throughput and unplug/replug recovery
-await validation. The local Watch relay smoke check covers fragmented/bounded
+decoded 60 actual IMU frames through the Pi broker. A later physical check
+using the public PyPI SDK received 450 HEVC camera
+frames in 15 seconds and decoded 449 RGB images at 360×640 (about 30 fps),
+with no reported decode errors. Windows and direct Mac iPhone USB data, Watch
+hardware, higher-resolution throughput and unplug/replug recovery await
+validation. The local Watch relay smoke check covers fragmented/bounded
 HTTP requests and unchanged USB payloads.
 
 See the [GitBook command reference](https://doc.ancoraspring.com/asmagic/python-sdk/receiving-streamed-data/command-line) for every CLI action and option.
