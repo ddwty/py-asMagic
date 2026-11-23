@@ -141,48 +141,4 @@ Register an explicit host command with
 `phone.register_command(topic, handler)`. The app lists it under Device
 commands; handlers own hardware stop/cleanup behavior.
 
-## Shared sessions and recovery
-
-Typed readers in one Python process share a physical USB session per UDID.
-On a Pi with `/run/asmagic-usb/bus.sock`, `"usb"` shares its optional existing
-broker. An explicit `"usb:UDID"` also shares that broker when its selected UDID
-matches. A different explicit UDID connects to that phone directly. The separate `asmagic-usb-link` service supplies boot startup, camera
-hotplug and adapters for local sensors. Basic iPhone Stream reception uses
-the SDK directly on a host with system USB support.
-
-For a broker with several Apple devices, set `device_udid` in its configuration
-to choose the phone used by the bridge's sensors and controls. An unconfigured broker waits when the initial
-choice is ambiguous. Its automatic selection keeps the first unique UDID for
-the service lifetime; configure a UDID to preserve the choice across restarts.
-`ASMagic_USB_BRIDGE_SOCKET` overrides the local bus path.
-`ASMagic_USBMUX_ADDRESS` overrides the system USB service endpoint with a
-Unix socket path or `tcp://127.0.0.1:27015`.
-
-Subscribers may start before attachment and wait for the phone. USB disconnect
-clears stale data and retries the link. Pending commands fail on disconnect;
-a new intentional request is required after recovery. AR/camera packets stay
-ordered before decoding; bounded queue overflow resets the link and reports
-an error. Starting a Stream and saving recordings remain explicit app actions.
-Watch also accepts `WatchIMUReceiver("usb")` or `"usb:DEVICE_UDID"`. Set the
-Watch HTTP sender to the iPhone's LAN IP and port **18002**; the USB-enabled
-foreground app forwards the original batches as `iphone.watch.8002`. The
-receiver's logical port stays 8002. Direct Watch HTTP to a computer remains
-available through `WatchIMUReceiver("0.0.0.0", port=8002)`.
-
-Raw audio and additional binary channels are available through
-`USBConnection.receive()`, including `iphone.websocket.8081`. Typed extra
-protobuf ports use `ProtobufSubscriber("usb", port, message_type)`.
-
-## Hardware verification
-
-On 2026-11-23, iPhone 17 Pro 1 → Raspberry Pi USB request/reply succeeded;
-IMU reception measured 601 packets in 10 seconds (about 60 Hz). The SDK also
-decoded 60 actual IMU frames through the Pi broker. A later physical check
-using the public PyPI SDK received 450 HEVC camera
-frames in 15 seconds and decoded 449 RGB images at 360×640 (about 30 fps),
-with no reported decode errors. Windows and direct Mac iPhone USB data, Watch
-hardware, higher-resolution throughput and unplug/replug recovery await
-validation. The local Watch relay smoke check covers fragmented/bounded
-HTTP requests and unchanged USB payloads.
-
-See the [GitBook command reference](https://doc.ancoraspring.com/asmagic/python-sdk/receiving-streamed-data/command-line) for every CLI action and option.
+[Complete command reference](https://doc.ancoraspring.com/asmagic/python-sdk/receiving-streamed-data/command-line)
