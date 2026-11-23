@@ -36,6 +36,13 @@ class WatchIMUReceiver:
         self.dropped_batches = 0
         self.last_error = None
         self.last_received_at = None
+        self._usb = None
+        if host == "usb" or host.startswith("usb:"):
+            from .usb import USBPortReader
+            self.host, self.port = host, port
+            self.address = "usb://{}/watch/{}".format(host[4:] or "auto", port)
+            self._usb = USBPortReader(host, port, max_batches, conflate, family="watch")
+            return
         receiver = self
 
         class Handler(BaseHTTPRequestHandler):
@@ -137,6 +144,22 @@ class WatchIMUReceiver:
 
     def get_frame(self, timeout: int = DEFAULT_TIMEOUT) -> Optional[WatchBatch]:
         validate_timeout(timeout)
+        if self._usb is not None:
+            if self._closed:
+                return None
+            payload = self._usb.read(timeout)
+            if payload is None:
+                self.last_error = self._usb.last_error or self._usb.session.last_error
+                return None
+            try:
+                batch = self.decode(payload)
+            except (DecodeError, ValueError) as error:
+                self.last_error = str(error)
+                return None
+            self.received_frames += 1
+            self.last_received_at = time.monotonic()
+            self.last_error = None
+            return batch
         deadline = None if timeout == -1 else time.monotonic() + timeout / 1000.0
         with self._condition:
             while not self._batches and not self._closed:
@@ -203,6 +226,9 @@ class WatchIMUReceiver:
             self._closed = True
             self._batches.clear()
             self._condition.notify_all()
-        self._server.shutdown()
-        self._server.server_close()
-        self._thread.join(timeout=2)
+        if self._usb is not None:
+            self._usb.close()
+        else:
+            self._server.shutdown()
+            self._server.server_close()
+            self._thread.join(timeout=2)

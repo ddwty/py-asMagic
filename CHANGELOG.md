@@ -1,7 +1,13 @@
 # Changelog
 
-## Unreleased
+## 1.1.0 — 2026-11-23
 
+- Add Watch HTTP-to-iPhone USB relay reception, all-stream USB decoder checks,
+  and native body model options in the diagnostic CLI.
+- Add USB reception by replacing the IP with `"usb"` in existing subscribers,
+  physical-device discovery, `asmagic usb list/doctor/setup`, and duplex data/RPC.
+- Keep typed stream decoding and iteration shared between TCP and USB; reconnect
+  USB streams while failing pending commands without replay.
 - Publish the SDK source at `ddwty/py-asMagic` with updated project links, English and Chinese quick starts, and contribution instructions.
 - Add CI for regression tests, documentation consistency, package builds and wheel installation.
 - Make documentation generation independent of external checkouts.

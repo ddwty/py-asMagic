@@ -74,3 +74,4 @@ jobs:
           cd "$RUNNER_TEMP"
           "$RUNNER_TEMP/asmagic-wheel/bin/python" -c "import asmagic; from asmagic import CameraDataSubscriber, ARDataSubscriber, IMUDataSubscriber, WatchIMUReceiver; print(asmagic.__version__)"
           "$RUNNER_TEMP/asmagic-wheel/bin/asmagic-test" --list
+          "$RUNNER_TEMP/asmagic-wheel/bin/asmagic" usb --help

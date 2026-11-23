@@ -1,5 +1,5 @@
 """Receive asMagic protobuf streams with receive(), iteration and context managers."""
-__version__ = "1.0.2"
+__version__ = "1.1.0"
 __author__ = "ASMagic Team"
 
 from .arDataSubscriber import ARDataSubscriber, connect
@@ -30,6 +30,8 @@ from .tracking_types import (AirPodsFrame, ARBodyFrame, BodyPoseFrame, ClawFrame
 from .joints import (BodyJointName, HandJointName, HandSide, BodyCoordinateSpace,
                      BodyJointArrays, HandJointArrays, BODY_JOINT_NAMES, HAND_JOINT_NAMES)
 from .streams import STREAMS, StreamInfo, subscribe
+from .usb import USBConnection, USBPacket, usb_devices
+from .usb_host import usb_status
 from .plotting import TrackingPlotter, HandTrackingWindow, plot_tracking
 
 __all__ = [
@@ -45,6 +47,6 @@ __all__ = [
     "HandPoseFrame", "Hand", "HandJoint", "HandFinger", "HandThumb", "HandSide", "JointTransform", "WatchFrame", "WatchBatch",
     "HandJoints", "BodyJoints", "BodyJointName", "HandJointName", "BodyCoordinateSpace",
     "BodyJointArrays", "HandJointArrays", "BODY_JOINT_NAMES", "HAND_JOINT_NAMES",
-    "STREAMS", "StreamInfo", "subscribe", "__version__",
+    "STREAMS", "StreamInfo", "subscribe", "USBConnection", "USBPacket", "usb_devices", "usb_status", "__version__",
     "TrackingPlotter", "HandTrackingWindow", "plot_tracking",
 ]

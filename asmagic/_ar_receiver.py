@@ -51,10 +51,18 @@ class ARReceiverPump:
             receiver = subscriber_type(ip, port, hwm, False, verbose)
             self.active = True
             self._ready.set()
+            usb_generation = 0
             while not self._stop.is_set():
                 try:
                     frame = receiver.get_frame(timeout=50)
+                    transport = getattr(receiver, "_usb", None)
+                    generation = getattr(transport, "generation", 0)
+                    if generation != usb_generation:
+                        decoder.reset()
+                        usb_generation = generation
                     if frame is None:
+                        if transport is not None:
+                            self.last_error = receiver.last_error
                         continue
                     self.received_frames = receiver.received_frames
                     self.last_received_at = receiver.last_received_at

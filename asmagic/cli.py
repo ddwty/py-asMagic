@@ -28,8 +28,10 @@ GUIDANCE = {
     "claw": "打开第一个夹爪的数据输出；调整夹爪命令，检查 angle 和可选的 motor 数据。",
     "claw2": "有第二个夹爪时打开其输出（默认 5401）；没有此功能可跳过。",
     "watch": "本步骤 Python 是 HTTP 服务端。启动后，在 Watch 填写这台计算机的局域网 IP 和端口，开始发送并移动手腕。",
+    "body_arkit": "在 iPhone Body tracking 中选择 ARKit，开始发送；让完整身体进入画面。",
+    "body_mediapipe": "在 iPhone Body tracking 中选择 MediaPipe，开始发送；让需要跟踪的人进入画面。",
 }
-TEST_STREAMS = tuple(STREAMS) + ("claw2", "watch")
+TEST_STREAMS = tuple(STREAMS) + ("body_arkit", "body_mediapipe", "claw2", "watch")
 STATUS_TEXT = {"received": "收到有效数据", "received_with_errors": "收到数据，同时存在错误",
                "empty_data": "收到帧，但未出现有效传感器/跟踪结果", "no_data": "没有收到帧",
                "errors": "数据或接收错误", "skipped": "已跳过", "not_run": "尚未测试"}
@@ -60,6 +62,8 @@ def main(argv=None):
     parser.add_argument("--all", action="store_true", help="按顺序提示打开各功能；Enter 开始，s 跳过，q 退出")
     parser.add_argument("--list", action="store_true", help="列出测试名称、端口和 App 操作")
     parser.add_argument("--ip", help="发送数据的 iPhone IP（Watch 单项测试无需此参数）")
+    parser.add_argument("--transport", choices=("tcp", "usb"), default="tcp", help="TCP/IP or direct USB through usbmuxd")
+    parser.add_argument("--udid", help="Select a physical USB iPhone by UDID")
     parser.add_argument("--port", type=int, help="覆盖单项测试端口")
     parser.add_argument("--bind", default="0.0.0.0", help="Watch HTTP 监听地址，默认允许局域网连接")
     parser.add_argument("--watch-port", type=int, default=8002)
@@ -70,14 +74,16 @@ def main(argv=None):
     parser.add_argument("--space", choices=("body", "world"), default="body", help="三维人体绘图坐标")
     parser.add_argument("--report", default="reports/app-streams.json", help="JSON 报告保存位置")
     args = parser.parse_args(argv)
+    if args.udid and args.transport != "usb":
+        parser.error("--udid requires --transport usb")
     if args.list:
         for name in TEST_STREAMS:
-            port = STREAMS[name].port if name in STREAMS else (5401 if name == "claw2" else args.watch_port)
+            port = STREAMS[name].port if name in STREAMS else {"claw2": 5401, "body_arkit": 8100, "body_mediapipe": 8104}.get(name, args.watch_port)
             print("{} | {} {} | {}".format(name, "HTTP" if name == "watch" else "TCP", port, GUIDANCE[name]))
         return 0
     if args.all == bool(args.stream):
         parser.error("请指定一个 stream，或使用 --all；可先使用 --list")
-    if (args.all or args.stream != "watch") and not args.ip:
+    if (args.all or args.stream != "watch") and not args.ip and args.transport != "usb":
         parser.error("ZeroMQ 测试需要 --ip，填写发送 iPhone 的地址")
     if args.all and args.port is not None:
         parser.error("--port 只用于单项测试；Watch 在全量测试中用 --watch-port")
@@ -92,6 +98,8 @@ def main(argv=None):
         except ImportError as error:
             parser.error(str(error))
     results = []
+    if args.transport == "usb":
+        print("USB 模式：连接数据线，解锁并信任此电脑，在新版 asMagic 中开启对应 Stream。")
     selected = TEST_STREAMS if args.all else (args.stream,)
     for index, name in enumerate(selected):
         print("\n{}：{}".format(name, GUIDANCE[name]))
@@ -111,13 +119,21 @@ def main(argv=None):
         receiver = None
         try:
             if name == "watch":
-                receiver = WatchIMUReceiver(args.bind, args.port if args.port is not None else args.watch_port, conflate=False)
+                host = ("usb:" + args.udid if args.udid else "usb") if args.transport == "usb" else args.bind
+                receiver = WatchIMUReceiver(host, args.port if args.port is not None else args.watch_port, conflate=False)
             else:
                 options = {"port": args.port} if args.port is not None else ({"port": 5401} if name == "claw2" else {})
-                receiver = subscribe("claw" if name == "claw2" else name, args.ip, **options)
+                stream = "claw" if name == "claw2" else name
+                if name in ("body_arkit", "body_mediapipe"):
+                    stream = "body"
+                    options["model"] = name[5:]
+                receiver = subscribe(stream, args.ip, transport=args.transport, udid=args.udid, **options)
             print("接收地址：", receiver.address)
             if name == "watch":
-                print("服务已启动：请在 Watch 配置这台计算机的 IP 和端口", receiver.port)
+                if args.transport == "usb":
+                    print("Watch USB 转发：在 Watch 设置 iPhone 的局域网 IP，HTTP 端口 18002；保持新版 iPhone App 在前台。")
+                else:
+                    print("服务已启动：请在 Watch 配置这台计算机的 IP 和端口", receiver.port)
             result = run_stream_check(name, receiver, duration=args.duration, count=args.count, plot=args.plot,
                                       plot_options={"space": BodyCoordinateSpace(args.space)}, images=args.images,
                                       on_status=lambda r: print("已收到 {} 帧，{} 帧有效；当前字段：{}".format(
@@ -133,7 +149,12 @@ def main(argv=None):
         if result.errors:
             print("错误：", "; ".join(result.errors))
         if result.status in ("no_data", "empty_data"):
-            print("检查对应功能是否开始发送、IP/端口、本地网络权限与防火墙；跟踪通道还需目标进入画面。")
+            if args.transport == "usb":
+                print("检查 USB 数据线、信任提示和 App 前台状态，并确认对应 Stream 已开始发送。")
+                if receiver is not None and receiver.last_error:
+                    print("USB 状态：", receiver.last_error)
+            else:
+                print("检查对应功能是否开始发送、IP/端口、本地网络权限与防火墙；跟踪通道还需目标进入画面。")
         if args.all and result.frames and result.manual_observation != "interrupted":
             try:
                 observed = input("动作与数值/绘图是否对应？y 是 / n 否 / Enter 尚未确认：").strip().lower()

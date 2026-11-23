@@ -10,7 +10,7 @@ from asmagic.proto import hand_pose_pb2, phone_msg_pb2
 
 
 def test_device_test_inventory_covers_all_streams_watch_and_second_claw(capsys):
-    assert set(TEST_STREAMS) == set(STREAMS) | {"watch", "claw2"}
+    assert set(TEST_STREAMS) == set(STREAMS) | {"watch", "claw2", "body_arkit", "body_mediapipe"}
     assert main(["--list"]) == 0
     output = capsys.readouterr().out
     assert all(name in output for name in TEST_STREAMS)

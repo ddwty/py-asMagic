@@ -113,6 +113,10 @@ def inspect_frame(stream: str, frame, decode_images: bool = False) -> FrameInspe
             components[name] = getattr(frame, name) is not None
         if frame.triggers is not None:
             values["triggers"] = [frame.triggers.l2.value, frame.triggers.r2.value]
+    elif stream in ("body_arkit", "body_mediapipe"):
+        components["body"] = bool(frame.people)
+        values.update(timestamp=frame.timestamp, people=len(frame.people),
+                      tracking_state=frame.tracking_state, model=frame.model.value)
     elif stream == "ar_body":
         values.update(tracking_state=frame.tracking_state, session_id=frame.session_id,
                       joints=len(frame.joints), local_joints=len(frame.local_joints), parents=len(frame.joint_parents))
@@ -200,7 +204,7 @@ def run_stream_check(stream, receiver, duration=15.0, plot=False, plot_options=N
         raise ValueError("duration must be positive and count must be nonnegative")
     from .plotting import TrackingPlotter, _pyplot
     plotter = None
-    if plot and stream in ("ar_body", "body_pose", "hand", "face", "face_hand"):
+    if plot and stream in ("ar_body", "body_arkit", "body_mediapipe", "body_pose", "hand", "face", "face_hand"):
         _pyplot()
         plotter = TrackingPlotter(**(plot_options or {}))
     result = StreamTestResult(stream, receiver.address)

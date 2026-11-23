@@ -41,6 +41,8 @@ def tcp_address(ip: str, port: int) -> str:
         raise ValueError("ip must be a host name or IP address, without a transport prefix")
     if isinstance(port, bool) or not isinstance(port, int) or not 1 <= port <= 65535:
         raise ValueError("port must be an integer from 1 to 65535")
+    if ip == "usb" or ip.startswith("usb:"):
+        return "usb://{}/{}".format(ip[4:] or "auto", port)
     host = ip.strip()
     if ":" in host and not host.startswith("["):
         host = "[" + host + "]"
@@ -59,6 +61,7 @@ class Receiver(Generic[T]):
         self._context = None
         self._socket = None
         self._poller = None
+        self._usb = None
         self._ip, self._port = ip, port
         self._address = tcp_address(ip, port)
         if isinstance(hwm, bool) or not isinstance(hwm, int) or hwm < 1:
@@ -67,6 +70,11 @@ class Receiver(Generic[T]):
         self.received_frames = 0
         self.last_received_at = None  # type: Optional[float]
         self._verbose = verbose
+        if ip == "usb" or ip.startswith("usb:"):
+            from .usb import USBPortReader
+            self._usb = USBPortReader(ip, port, hwm, conflate)
+            self._connected = True
+            return
         try:
             self._context = zmq.Context()
             self._socket = self._context.socket(zmq.SUB)
@@ -123,11 +131,18 @@ class Receiver(Generic[T]):
         validate_timeout(timeout)
         if not self._connected:
             return None
-        events = dict(self._poller.poll(timeout))
-        if not events.get(self._socket, 0) & zmq.POLLIN:
-            return None
+        if self._usb is not None:
+            payload = self._usb.read(timeout)
+            if payload is None:
+                self.last_error = self._usb.last_error or self._usb.session.last_error
+                return None
+        else:
+            events = dict(self._poller.poll(timeout))
+            if not events.get(self._socket, 0) & zmq.POLLIN:
+                return None
         try:
-            payload = self._socket.recv(zmq.DONTWAIT)
+            if self._usb is None:
+                payload = self._socket.recv(zmq.DONTWAIT)
             frame = self.decode(payload)
         except zmq.Again:
             return None
@@ -205,6 +220,10 @@ class Receiver(Generic[T]):
 
     def close(self) -> None:
         self._connected = False
+        usb = getattr(self, "_usb", None)
+        if usb is not None:
+            self._usb = None
+            usb.close()
         socket = getattr(self, "_socket", None)
         context = getattr(self, "_context", None)
         if socket is not None:

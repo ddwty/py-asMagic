@@ -38,8 +38,14 @@ STREAMS = MappingProxyType({
 })
 
 
-def subscribe(stream: str, ip: str, **kwargs):
+def subscribe(stream: str, ip: str = None, *, transport="tcp", udid=None, **kwargs):
     """Optional factory; the existing explicit subscriber classes remain primary."""
+    if transport not in ("tcp", "usb"):
+        raise ValueError("transport must be tcp or usb")
+    if transport == "usb":
+        ip = "usb:" + udid if udid else "usb"
+    elif udid is not None:
+        raise ValueError("udid requires transport='usb'")
     if stream == "body":
         return BodyTrackingDataSubscriber(ip, **kwargs)
     if stream == "face_hand":
