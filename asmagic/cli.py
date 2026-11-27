@@ -32,6 +32,8 @@ GUIDANCE = {
     "body_mediapipe": "在 iPhone Body tracking 中选择 MediaPipe，开始发送；让需要跟踪的人进入画面。",
 }
 TEST_STREAMS = tuple(STREAMS) + ("body_arkit", "body_mediapipe", "claw2", "watch")
+LEGACY_TEST_STREAMS = ("face_hand",)
+GUIDANCE["face_hand"] = "旧版合并面部/手部数据；仅用于旧 App。当前 App 请分别测试 face 和 hand。"
 STATUS_TEXT = {"received": "收到有效数据", "received_with_errors": "收到数据，同时存在错误",
                "empty_data": "收到帧，但未出现有效传感器/跟踪结果", "no_data": "没有收到帧",
                "errors": "数据或接收错误", "skipped": "已跳过", "not_run": "尚未测试"}
@@ -58,7 +60,7 @@ def save_report(path, results):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description="逐个连接 App 数据流，检查字段，按需绘图并保存 JSON 报告。")
-    parser.add_argument("stream", nargs="?", choices=TEST_STREAMS, help="单项测试的数据流名称")
+    parser.add_argument("stream", nargs="?", choices=TEST_STREAMS + LEGACY_TEST_STREAMS, help="单项测试的数据流名称")
     parser.add_argument("--all", action="store_true", help="按顺序提示打开各功能；Enter 开始，s 跳过，q 退出")
     parser.add_argument("--list", action="store_true", help="列出测试名称、端口和 App 操作")
     parser.add_argument("--ip", help="发送数据的 iPhone IP（Watch 单项测试无需此参数）")
@@ -74,12 +76,23 @@ def main(argv=None):
     parser.add_argument("--space", choices=("body", "world"), default="body", help="三维人体绘图坐标")
     parser.add_argument("--report", default="reports/app-streams.json", help="JSON 报告保存位置")
     args = parser.parse_args(argv)
+    if args.ip == "usb" or (args.ip and args.ip.startswith("usb:")):
+        args.transport = "usb"
+        selected_udid = args.ip[4:] if args.ip.startswith("usb:") else None
+        if selected_udid and args.udid and args.udid != selected_udid:
+            parser.error("--ip usb:UDID 与 --udid 必须选择同一个设备")
+        args.udid = args.udid or selected_udid
     if args.udid and args.transport != "usb":
         parser.error("--udid requires --transport usb")
     if args.list:
         for name in TEST_STREAMS:
             port = STREAMS[name].port if name in STREAMS else {"claw2": 5401, "body_arkit": 8100, "body_mediapipe": 8104}.get(name, args.watch_port)
-            print("{} | {} {} | {}".format(name, "HTTP" if name == "watch" else "TCP", port, GUIDANCE[name]))
+            route = "USB watch relay" if args.transport == "usb" and name == "watch" else (
+                "USB" if args.transport == "usb" else "HTTP" if name == "watch" else "TCP")
+            guidance = ("Watch → iPhone HTTP 18002 → USB；Watch 填写 iPhone 的局域网 IP，保持 iPhone App 在前台。"
+                        if name == "watch" and args.transport == "usb" else GUIDANCE[name])
+            print("{} | {} {} | {}".format(name, route, port, guidance))
+        print("face_hand | legacy 8102 | " + GUIDANCE["face_hand"])
         return 0
     if args.all == bool(args.stream):
         parser.error("请指定一个 stream，或使用 --all；可先使用 --list")
@@ -102,7 +115,9 @@ def main(argv=None):
         print("USB 模式：连接数据线，解锁并信任此电脑，在新版 asMagic 中开启对应 Stream。")
     selected = TEST_STREAMS if args.all else (args.stream,)
     for index, name in enumerate(selected):
-        print("\n{}：{}".format(name, GUIDANCE[name]))
+        guidance = ("Watch → iPhone HTTP 18002 → USB；Watch 填写 iPhone 的局域网 IP，保持 iPhone App 在前台。"
+                    if name == "watch" and args.transport == "usb" else GUIDANCE[name])
+        print("\n{}：{}".format(name, guidance))
         if args.all:
             try:
                 choice = input("Enter 开始 / s 跳过 / q 结束：").strip().lower()

@@ -24,20 +24,18 @@ Start with the [quick start](https://doc.ancoraspring.com/asmagic/python-sdk/rec
 
 ## USB transport
 
-Replace the iPhone IP with `"usb"` in existing subscribers:
-
-```python
-import asmagic
-
-with asmagic.IMUDataSubscriber("usb") as sub:
-    for frame in sub:
-        print(frame.accelerometer)
-```
+Run the [USB chapter examples](examples/documentation/README.md). Each `_usb.py` file contains the exact code shown in its GitBook USB tab.
 
 `asmagic usb list` discovers attached devices; `asmagic usb setup` configures
 system USB support on a new host. See [USB setup and examples](docs/USB.md)
 for Mac, Windows, Linux, Raspberry Pi and duplex communication.
-Requires SDK 1.1.0+ and a USB-enabled iPhone build. See the [GitBook USB guide](https://doc.ancoraspring.com/asmagic/python-sdk/receiving-streamed-data/usb-connection).
+Requires SDK 1.1.0+ and a USB-enabled iPhone build. See the [GitBook USB guide](https://doc.ancoraspring.com/asmagic/python-sdk/receiving-streamed-data/quick-start#usb-connection).
+
+```bash
+asmagic-test --all --transport usb --plot --images --report reports/usb.json
+```
+
+[Device checks and reports](docs/device-testing.md).
 
 ## Contributing
 

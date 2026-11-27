@@ -35,6 +35,14 @@ jobs:
       PYTHONUTF8: '1'
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check out GitBook example sources
+        uses: actions/checkout@v4
+        with:
+          repository: AncoraSpring/gitbook
+          ref: main
+          path: gitbook-source
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
@@ -45,7 +53,7 @@ jobs:
       - name: Run regression tests
         run: python -m pytest -q
       - name: Check documentation sources
-        run: python tools/sync_documentation_examples.py --check
+        run: python tools/sync_documentation_examples.py --check --gitbook gitbook-source
       - name: Check repository content and local links
         run: python tools/check_repository.py
 

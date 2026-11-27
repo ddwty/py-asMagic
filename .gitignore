@@ -16,6 +16,7 @@ env/
 coverage.xml
 htmlcov/
 reports/
+gitbook-source/
 
 # Generated distributions
 build/

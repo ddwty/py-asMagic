@@ -1,0 +1,300 @@
+{
+  "baseline": "c91e2387170e77e560782b4190f3ccebeac97c42",
+  "archive": "tools/retired-examples.md",
+  "retirements": [
+    {
+      "file": "examples/_common.py",
+      "archive_block": 1,
+      "sha256": "2694012f4e7d23941b6474f4c652828f35bb537252497ca8502cf14c04f50890",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/camera_only.py",
+      "archive_block": 2,
+      "sha256": "0db098af3ef4257b6c6d9676a9ee6a732619a059e21bbd84c8ed9c8c0fb8aa60",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/documentation/ar/01_continuous.py",
+      "archive_block": 3,
+      "sha256": "f550526a69e130f0301491d394e29ca1cf43defd511803a5a69d8c63302d808b",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/documentation/ar/07_metadata.py",
+      "archive_block": 4,
+      "sha256": "0e22220125d477911541c49429190f1993a7641a94e78a04448ec6659778718f",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/documentation/ar/08_frame_fields.py",
+      "archive_block": 5,
+      "sha256": "181f37af74106f426a7bc8978d70c548d1a2782c9d837f82bed2a3a2b50eabb8",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/documentation/ar/09_intrinsics.py",
+      "archive_block": 6,
+      "sha256": "90e5d4dae2a21151e209b334f8507425ee90115329f7ffaa78b9b174d458dbca",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/documentation/ar/10_selected_fields.py",
+      "archive_block": 7,
+      "sha256": "b4fe04d5c05a6b60c0a85d3df4535fc9ebc65510da4c5fb2947f3fe14c713e08",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/documentation/ar/11_quick_start.py",
+      "archive_block": 8,
+      "sha256": "8e0bed2fc22ed0b5bd68a4dad306ae6d51efe623e55535171abf7ad48999d931",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/documentation/ar/12_authored_continuous.py",
+      "archive_block": 9,
+      "sha256": "806b52fba03404dab372de6864fab46bd39a65e99da3b65525129114a98042a9",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/documentation/claw/01_first_gripper.py",
+      "archive_block": 10,
+      "sha256": "71446e4b02dd5cfbd5b03a5d684de901e9b54ec1ff261b1e57d11cedfe6470d6",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/documentation/claw/02_second_gripper.py",
+      "archive_block": 11,
+      "sha256": "4408eac01999d65ed0027f3f89e3b2d5ea56f5e6c781f17374cba5ca105b4d02",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/documentation/common/01_options_timeout_and_cleanup.py",
+      "archive_block": 12,
+      "sha256": "ac6aa68c94f314304edfbde000e84844ed24ad1761ec8d7d050345080717df1d",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/documentation/common/02_stream_callback.py",
+      "archive_block": 13,
+      "sha256": "93688aee5b4ac836accfff9510b11f4bc274143c490bed98d9eb499665e040af",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/documentation/common/03_named_stream_factory.py",
+      "archive_block": 14,
+      "sha256": "746c1cd4389a82ddceca2f00a4b53845a6487906699134df27c0c860e74bc75e",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/documentation/common/04_raw_protobuf.py",
+      "archive_block": 15,
+      "sha256": "ec3f85ec714730df68a5f310a3f9dcb35cc064ed4f7c79421be3f8674945cc63",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/documentation/common/05_save_protobuf_frame.py",
+      "archive_block": 16,
+      "sha256": "6bdcf18d50228c119d653c80186a3d034a6eaec36ade3ea35ebb8ef7bcbad4bb",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/documentation/common/06_decode_saved_frame.py",
+      "archive_block": 17,
+      "sha256": "62ca7635a1ca3a3d0c552f1feac94d2837649618c6ae934d249b4fa77cf1c42d",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/documentation/common/07_receive_loop.py",
+      "archive_block": 18,
+      "sha256": "5d3f38c3aa2eaa1d435bba254e2485b32a610f99b13576beedad6ce153e69f4b",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/documentation/face/05_optional_plot.py",
+      "archive_block": 19,
+      "sha256": "a59d6a08ef259a4ec273523815955137bc0407f5d8664dd3b8b17a562c0aca73",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/documentation/face/06_face_and_hands.py",
+      "archive_block": 20,
+      "sha256": "dd84950f8a40776b37ab8814f679132a1c5f371529da7cbbb5e5cce6d0d8126a",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/documentation/legacy/01_magiclaw_combined.py",
+      "archive_block": 21,
+      "sha256": "d3ea5df4f9b1408330b14ed973bebe378c4723c2c4e4fb7ffff64b7aa05024d7",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/documentation/legacy/02_watch_zmq.py",
+      "archive_block": 22,
+      "sha256": "8ebd8b1bae5a577e4e123400c054b2e6afcc339f8bde278e887a0ef6d76c4a8a",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/documentation/plotting/01_manual_plotter.py",
+      "archive_block": 23,
+      "sha256": "ce43e8d832206ff9a5459ea55a5096715107a10fc2c49843191aa80328a3c02b",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/documentation/plotting/02_frame_plot.py",
+      "archive_block": 24,
+      "sha256": "1db5ddf81316e0a401a4e8eb7734ca40940f154548d33e769111657319f4e3e6",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/documentation/plotting/03_single_hand.py",
+      "archive_block": 25,
+      "sha256": "3109ea03f7d05e9b97d0984c0c98291f53ef4ad57580930a84ce4a4214634a14",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/documentation/plotting/04_save_without_window.py",
+      "archive_block": 26,
+      "sha256": "43bc0fff8e4b07b3e4d36d310447a08651863e381eb4d55b2570124acef29b04",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/documentation/upper_body/02_optional_skeleton.py",
+      "archive_block": 27,
+      "sha256": "c845d1a0e1af0b94d9b901baf302479bdabf0cd7cf91ac343fc0aceea6223a55",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/documentation/watch/01_batches.py",
+      "archive_block": 28,
+      "sha256": "4691f2541ae4873af7812579b91a5e9d7f98bfd51a980c9030ee5f2b4b691bea",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/documentation/watch/02_individual_samples.py",
+      "archive_block": 29,
+      "sha256": "4691f2541ae4873af7812579b91a5e9d7f98bfd51a980c9030ee5f2b4b691bea",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/documentation/watch/03_receive_methods.py",
+      "archive_block": 30,
+      "sha256": "4691f2541ae4873af7812579b91a5e9d7f98bfd51a980c9030ee5f2b4b691bea",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/documentation/watch/04_payload_format_and_decode.py",
+      "archive_block": 31,
+      "sha256": "cb8f3dcdc5d16f5f3566cfdcd2b949802b2059b2a0f786236aeb4ce77ec86aaa",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/preview_tracking_plots.py",
+      "archive_block": 32,
+      "sha256": "0141e5bd5b88b12fd557287a490d7273e806ea46fe63a5d25ad776a0a6acfae0",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/read_airpods_data.py",
+      "archive_block": 33,
+      "sha256": "81c0c7a69b9000e40e83a77c7330ac7d7fb0cdabbcfb7446790b2bc1e01ed447",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/read_ar_data.py",
+      "archive_block": 34,
+      "sha256": "4322f4f251f9fea65e2e7c30acf5c4fa8923db3e277d721a77914dd8458fb989",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/read_body_data.py",
+      "archive_block": 35,
+      "sha256": "3ab0cc71d7853c3d2f513c15fb7a3baf3bee6299ae55a1d72fe0404023fd0b9e",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/read_claw_data.py",
+      "archive_block": 36,
+      "sha256": "8723b8fd69c9fba9c71348e8e3dd68f85edb5b506f0843219ef246947cafe358",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/read_face_data.py",
+      "archive_block": 37,
+      "sha256": "e53f50997e56a1037c905a629a7dbf4025c2993c2980a01a977133f197f860af",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/read_face_hand_data.py",
+      "archive_block": 38,
+      "sha256": "dc27516c7ed0be9f64091015feaa8c88ce30803e148669b3e063c61b62e36488",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/read_hand_data.py",
+      "archive_block": 39,
+      "sha256": "2ba81531e27135944c6f556061aa1ac1b93b2b2f1dc1b1b255a5bff44ab26313",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/read_imu_data.py",
+      "archive_block": 40,
+      "sha256": "cc7be4c9ad328835920af44c0b05f6f5b4db219868ebb024351f7d9fb2841d54",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/read_joystick_data.py",
+      "archive_block": 41,
+      "sha256": "fcb6911540d61031dd0565c506c3ad40e242c84cc01e64bc44d442579665368c",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/read_upper_body_data.py",
+      "archive_block": 42,
+      "sha256": "1872797ecd1cf758bb4e4c577027624f5e1bbc0284c533da637903cedd79962e",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/receive_stream.py",
+      "archive_block": 43,
+      "sha256": "0cb43f8e693736430601faf50e9b41278a6f71a9ecc444ceecafa2eafefd2e51",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/receive_watch.py",
+      "archive_block": 44,
+      "sha256": "93db834c4d51f4e01d51b69d9f55d24f66e7a2aa5eeffaa0d78abc8f927a15a6",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/simple_continuous.py",
+      "archive_block": 45,
+      "sha256": "18ebbc9e470a029e5cf7c84a5a8413906646d0010d0ce03c318172d9dc1570e4",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/simple_with_images.py",
+      "archive_block": 46,
+      "sha256": "a8500e86eda9fa82c584360743ca591a7820cd0e5d11071e153a1963addab9eb",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/test_app_streams.py",
+      "archive_block": 47,
+      "sha256": "1d46c0e62a2a15b2f998f6c24c0dbd53004c37371064b11d0d25de8fdf8a1512",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/test_camera.py",
+      "archive_block": 48,
+      "sha256": "a8500e86eda9fa82c584360743ca591a7820cd0e5d11071e153a1963addab9eb",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    },
+    {
+      "file": "examples/usb_imu.py",
+      "archive_block": 49,
+      "sha256": "39872c4a40cf1712aaed4d98309b1933906e0690bc341df4db7a121bb415ef96",
+      "reason": "Replaced or retired during user-requested cleanup so active examples exactly match current GitBook chapter code."
+    }
+  ]
+}

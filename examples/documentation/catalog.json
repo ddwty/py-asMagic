@@ -1,424 +1,650 @@
 {
   "groups": [
     {
+      "id": "quick_start",
+      "title": "Quick Start",
+      "page": "quick-start.md"
+    },
+    {
       "id": "camera",
-      "title": "Camera Streaming Examples",
-      "intro": "Receive RGB video from the camera lens selected on your iPhone. Install `asmagic` 1.0.2 or newer.\n\n## Set up the iPhone\n\n- Connect your iPhone and computer to the same network.\n- Open **Stream**. It starts in **Camera + AR**, so select **Camera** for this receiver.\n- Choose a lens. **0.5×** selects the ultra-wide camera on supported iPhones. Use the camera-switch button for the front camera.\n- Open **Send settings**, choose a **Resolution**, then enable **Stream Video**.\n- Copy the displayed **IP address** into `IPHONE_IP` in the example.\n\nThe flashlight button controls the current rear camera when supported.\n\n## Resolution and orientation\n\nThe resolution list shows the pixel dimensions sent to Python. Available choices follow the selected lens and device orientation. A 1920 × 1080 camera frame offers 320 × 180, 640 × 360, 960 × 540, 1280 × 720 and 1920 × 1080 px. Portrait output swaps width and height. Check `data.rgb_width`, `data.rgb_height` or `data.color_upright.shape` after changing lenses or resolution.\n\nThe sender rotates images and mirrors the front camera to match its preview. Frames use JPEG or HEVC, and `color_bytes` returns the compressed payload. The SDK decodes either format into RGB pixels in `data.color_array`. Use `data.color_upright` to apply rotation metadata or `data.show_image()` to display an upright image.\n\n`CameraDataSubscriber.receive()` returns one `CameraFrame`. Its `has_color_image`, `color_bytes`, `color_array` and `color_upright` fields match the `ARFrame` image API. Camera uses port 8105; AR uses port 8000. Camera frames have no pose, intrinsics or depth.\n\n## Frame data\n\n| Field | Value |\n|---|---|\n| `color_array`, `color_upright` | RGB `uint8` NumPy array shaped `(height, width, 3)`, or `None` while waiting for a decodable image; same access as AR frames |\n| `image`, `image_upright` | Backward-compatible aliases for `color_array` and `color_upright` |\n| `rgb_width`, `rgb_height` | Encoded width and height in pixels; `width` and `height` are aliases |\n| `timestamp` | iPhone wall-clock time in seconds |\n| `source_timestamp` | Monotonic camera capture time in seconds |\n| `frame_id` | Frame sequence number, which restarts when the sender changes lens, resolution or session |\n| `color_bytes` | Encoded JPEG or HEVC bytes; `image_bytes` is an alias |\n| `has_color_image` | Whether the frame contains encoded color image bytes |\n| `protobuf` | Original message for advanced inspection |\n\n`CameraDataSubscriber(ip, port=8105, hwm=32, conflate=False, verbose=False)` supports context management, `receive()`, `receive(timeout=...)`, iteration and `close()`. A timeout is in milliseconds and returns `None`. `subscribe(\"camera\", ip)` selects the same receiver.\n\nThe receiver decodes HEVC packets in order. `conflate=True` keeps the latest decoded frame for a responsive preview. Continue receiving after a lens or resolution change while the next keyframe arrives. The examples below keep the video window responsive during a pause and release their receiver when stopped.\n\n```bash\npython -m pip install --upgrade \"asmagic>=1.0.2\"\n```\n"
+      "title": "Camera Streaming",
+      "page": "camera-data-receiving-examples.md"
     },
     {
       "id": "ar",
-      "title": "AR Data Receiving Examples",
-      "intro": "Camera images, depth, pose and velocity."
+      "title": "AR Data",
+      "page": "ar-data-receiving-examples.md"
     },
     {
       "id": "imu",
-      "title": "IMU Data Receiving Examples",
-      "intro": "iPhone acceleration, angular velocity and magnetic field."
+      "title": "iPhone IMU",
+      "page": "imu-data-receiving-examples.md"
     },
     {
       "id": "joystick",
-      "title": "Joystick Receiving Examples",
-      "intro": "On-screen sticks and buttons, or a connected game controller."
+      "title": "Joystick",
+      "page": "joystick-receiving-example.md"
     },
     {
       "id": "airpods",
-      "title": "AirPods Receiving Examples",
-      "intro": "AirPods head rotation."
+      "title": "AirPods Motion",
+      "page": "airpods-and-gripper.md"
     },
     {
       "id": "body",
-      "title": "Body Tracking Receiving Examples",
-      "intro": "Read complete ARKit or MediaPipe body data through the same people, named-joint and array API. See [the illustrated body guide](../body-tracking.md) for coordinates, identity and exact formats."
+      "title": "3D Body Tracking",
+      "page": "body-tracking.md"
     },
     {
       "id": "upper_body",
-      "title": "Upper Body Receiving Examples",
-      "intro": "2D upper-body joints and angles."
+      "title": "2D Upper-Body Tracking",
+      "page": "upper-body-tracking.md"
     },
     {
       "id": "hand",
-      "title": "Hand Tracking Receiving Examples",
-      "intro": "Hand joints from Stream or Face and Hand Tracking. Read `frame.left.index.tip` or `frame.right.thumb.tip` after checking hand and joint presence.\n\n[Left/right, all 21 joint locations and window API](../hands.md)\n\n![Left and right hand joint definitions](../assets/hand-joint-map.png)\n\n![Normalized hand coordinates in the raw camera image](../assets/hand-reading-flow.png)"
+      "title": "Hand Tracking",
+      "page": "hand-tracking.md"
     },
     {
       "id": "face",
-      "title": "Face Data Receiving Examples",
-      "intro": "Face points, movement coefficients and mesh. Hands use HandPoseDataSubscriber.\n\n[All face fields, Python types, 52 coefficient definitions and diagrams](../face-and-hands.md)"
-    },
-    {
-      "id": "claw",
-      "title": "Gripper Receiving Examples",
-      "intro": "Gripper commands and reported motor state."
-    },
-    {
-      "id": "watch",
-      "title": "Watch IMU Receiving Examples",
-      "intro": "Watch motion samples received on your computer."
-    },
-    {
-      "id": "common",
-      "title": "Common Receiving API Examples",
-      "intro": "Receiving, processing and saving frames."
-    },
-    {
-      "id": "plotting",
-      "title": "Skeleton Plotting API Examples",
-      "intro": "Display or save received tracking frames."
-    },
-    {
-      "id": "legacy",
-      "title": "Legacy Receiving Examples",
-      "intro": "Receivers for explicitly configured older publishers."
+      "title": "Face Tracking",
+      "page": "face-and-hand-tracking.md"
     }
   ],
   "examples": [
     {
+      "group": "quick_start",
+      "file": "quick_start/01_first_frame.py",
+      "title": "Receive your first frame",
+      "block": 1,
+      "transport": "network",
+      "kind": "script",
+      "sha256": "338166f89c29206796188a41e9db4bdd10497793b2f9cdf31775d22858a151e0"
+    },
+    {
       "group": "camera",
       "file": "camera/00_receive_image_data.py",
       "title": "Read camera image data",
-      "note": "Read frame metadata and access the encoded image bytes."
+      "block": 1,
+      "transport": "network",
+      "kind": "script",
+      "sha256": "a4af381e76ec05e16a70e95495ee06eed95e424ed307eea338e2750bd9d7ac47"
+    },
+    {
+      "group": "camera",
+      "file": "camera/00_receive_image_data_usb.py",
+      "title": "Read camera image data",
+      "block": 2,
+      "transport": "usb",
+      "kind": "script",
+      "sha256": "c6bde27202e6db2e6c7983649ebaa310b5c7f631c86928333b9c99593aa46130"
     },
     {
       "group": "camera",
       "file": "camera/01_preview.py",
       "title": "Live video preview",
-      "note": "Press Q or Escape in the video window to close it. Ctrl-C stops the receiver from the terminal."
+      "block": 3,
+      "transport": "network",
+      "kind": "script",
+      "sha256": "0db098af3ef4257b6c6d9676a9ee6a732619a059e21bbd84c8ed9c8c0fb8aa60"
+    },
+    {
+      "group": "camera",
+      "file": "camera/01_preview_usb.py",
+      "title": "Live video preview",
+      "block": 4,
+      "transport": "usb",
+      "kind": "script",
+      "sha256": "cb1b92bce09f2f87b70659160612f0fc0edccf8ff9e61bfcaad27b2b585985c7"
+    },
+    {
+      "group": "camera",
+      "file": "camera/04_jpeg_bytes.py",
+      "title": "Receive JPEG images",
+      "block": 5,
+      "transport": "network",
+      "kind": "script",
+      "sha256": "9bb2bd4811651257e52d9f187d89a5406732aedfbab28c49f79d9972963d3359"
     },
     {
       "group": "camera",
       "file": "camera/02_rgb_arrays.py",
       "title": "Read RGB arrays and timestamps",
-      "note": "Read the RGB image in received orientation using the same `color_array` property as AR frames. Ctrl-C stops receiving."
+      "block": 6,
+      "transport": "network",
+      "kind": "script",
+      "sha256": "4a1ef7c719cb137f50137fa5299ba45918af8c95b5918ede529c40e4ff83cda2"
+    },
+    {
+      "group": "camera",
+      "file": "camera/02_rgb_arrays_usb.py",
+      "title": "Read RGB arrays and timestamps",
+      "block": 7,
+      "transport": "usb",
+      "kind": "script",
+      "sha256": "18e6ff33669c29de0deb0b099f650995de5fceef63138aba199a3f21f6d7dd07"
     },
     {
       "group": "camera",
       "file": "camera/03_save_image.py",
       "title": "Save one image",
-      "note": "Save camera.png in the current directory. The script waits up to five seconds for a decoded frame."
+      "block": 8,
+      "transport": "network",
+      "kind": "script",
+      "sha256": "be689b2368fb76c11f3ffe0df406d7205a83f3f9dbcbd6e95a827c8a42798709"
+    },
+    {
+      "group": "camera",
+      "file": "camera/03_save_image_usb.py",
+      "title": "Save one image",
+      "block": 9,
+      "transport": "usb",
+      "kind": "script",
+      "sha256": "d0ad7056069b32d9cd90aeff3584ccb37dc768f552846567679282a81d395371"
     },
     {
       "group": "ar",
       "file": "ar/01_continuous.py",
-      "title": "Continuous AR data reading",
-      "note": "Print RGB, depth, confidence, poses, intrinsics and frame information. frame.depth keeps the original uint16 values. Missing image arrays are None."
+      "title": "Read all AR fields",
+      "block": 1,
+      "transport": "network",
+      "kind": "script",
+      "sha256": "1e973f0c2aba0b0997e632550fd1f0a6f4e5e316cfd1cf239fde3da88d3607f6"
+    },
+    {
+      "group": "ar",
+      "file": "ar/01_continuous_usb.py",
+      "title": "Read all AR fields",
+      "block": 2,
+      "transport": "usb",
+      "kind": "script",
+      "sha256": "90e1f8ebd0e97f13b3ab4fc5b55463e445af72be7a344fa41f7c49cf80ea7ea3"
     },
     {
       "group": "ar",
       "file": "ar/03_display_images.py",
       "title": "Optionally display color and depth",
-      "note": "Choose color and depth with show_images(). ESC closes the windows."
+      "block": 3,
+      "transport": "network",
+      "kind": "script",
+      "sha256": "0936f9792af34b0398845689a228d83bc5134130ab2de2b97cdcea1573102aa5"
+    },
+    {
+      "group": "ar",
+      "file": "ar/03_display_images_usb.py",
+      "title": "Optionally display color and depth",
+      "block": 4,
+      "transport": "usb",
+      "kind": "script",
+      "sha256": "b7610bb47db7a79dac359372d75b949ccb4a4395c9db852272018c02710dd105"
     },
     {
       "group": "ar",
       "file": "ar/04_image_arrays.py",
       "title": "Process RGB, depth and confidence arrays",
-      "note": "Arrays retain raw orientation. frame.depth keeps the original uint16 values; missing images are None."
+      "block": 5,
+      "transport": "network",
+      "kind": "script",
+      "sha256": "00cad9c3203b082bc4cf1e93d5e3ace339add7b9cdc6fad52fe6695596362f8c"
+    },
+    {
+      "group": "ar",
+      "file": "ar/04_image_arrays_usb.py",
+      "title": "Process RGB, depth and confidence arrays",
+      "block": 6,
+      "transport": "usb",
+      "kind": "script",
+      "sha256": "a09ffd1c9cc632034fd01359f604e8dada14a04d354d77d0d4c2e4f6add0bcf6"
     },
     {
       "group": "ar",
       "file": "ar/05_pose_matrices.py",
       "title": "Positions, quaternions and matrices",
-      "note": "Pose translation is in meters; rotation is [qx, qy, qz, qw]."
+      "block": 7,
+      "transport": "network",
+      "kind": "script",
+      "sha256": "1067e3e0c63df0fbd70c6a52da4ae0f9bb57b735d13b09babc6d75c072c51d49"
     },
     {
       "group": "ar",
-      "file": "ar/07_metadata.py",
-      "title": "Frame and session information",
-      "note": "Print capture, session and image metadata."
+      "file": "ar/05_pose_matrices_usb.py",
+      "title": "Positions, quaternions and matrices",
+      "block": 8,
+      "transport": "usb",
+      "kind": "script",
+      "sha256": "329568fd5b9f21b8206bf84116687407bdfe8051f50956ada0faaad19e8e8a81"
     },
     {
       "group": "ar",
-      "file": "ar/08_frame_fields.py",
-      "title": "Read image and pose fields",
-      "note": "Read all values from one received frame."
+      "file": "ar/10_selected_fields.py",
+      "title": "Read selected AR fields",
+      "block": 9,
+      "transport": "network",
+      "kind": "script",
+      "sha256": "90e5d4dae2a21151e209b334f8507425ee90115329f7ffaa78b9b174d458dbca"
+    },
+    {
+      "group": "ar",
+      "file": "ar/10_selected_fields_usb.py",
+      "title": "Read selected AR fields",
+      "block": 10,
+      "transport": "usb",
+      "kind": "script",
+      "sha256": "737dc931c111553722cae7cc5a6d5bbf79631c881562d50da8b61b440d8b771e"
+    },
+    {
+      "group": "ar",
+      "file": "ar/09_intrinsics.py",
+      "title": "Intrinsics and image size",
+      "block": 11,
+      "transport": "network",
+      "kind": "script",
+      "sha256": "424a573e420c2b4ddf735cdeb0e8fde90f93e66ec34114425e559ebd3bdce224"
+    },
+    {
+      "group": "ar",
+      "file": "ar/09_intrinsics_usb.py",
+      "title": "Intrinsics and image size",
+      "block": 12,
+      "transport": "usb",
+      "kind": "script",
+      "sha256": "18e4dd69ec57a4a231e1d1c196cd8822936b5207bdaed6f5ff02e1356c8166f8"
     },
     {
       "group": "imu",
       "file": "imu/01_all_sensors.py",
       "title": "Read all available IMU sensors",
-      "note": "Acceleration: G. Angular velocity: rad/s. Magnetic field: μT."
+      "block": 1,
+      "transport": "network",
+      "kind": "script",
+      "sha256": "c2ddcdf6a088d19e54947ce9cbec9e99bd3a6a40a2edd43fec301a87990165f8"
+    },
+    {
+      "group": "imu",
+      "file": "imu/01_all_sensors_usb.py",
+      "title": "Read all available IMU sensors",
+      "block": 2,
+      "transport": "usb",
+      "kind": "script",
+      "sha256": "48769caaa28e3e78a0db3a3e64d36b90ee0671e11c6c0abbafe8a1ad7db42e8e"
+    },
+    {
+      "group": "imu",
+      "file": "imu/02_quick_start.py",
+      "title": "Read motion continuously",
+      "block": 3,
+      "transport": "network",
+      "kind": "script",
+      "sha256": "5e8f7fbdebef513598ffd1b819214a8205f860180b2c693fa180b2b94598c6b4"
+    },
+    {
+      "group": "imu",
+      "file": "imu/02_quick_start_usb.py",
+      "title": "Read motion continuously",
+      "block": 4,
+      "transport": "usb",
+      "kind": "script",
+      "sha256": "e193dbb3f51a7daf28b55c3adc60015916b7be6bbd47d5ef99d462debac33b67"
     },
     {
       "group": "joystick",
       "file": "joystick/03_named_controls.py",
       "title": "Read named controller controls",
-      "note": "Receive one frame and read sticks and named buttons."
+      "block": 1,
+      "transport": "network",
+      "kind": "script",
+      "sha256": "6b8f258f9be1d6255b833c4313ffeeaba359faa3233513020cb9f2840e037b94"
+    },
+    {
+      "group": "joystick",
+      "file": "joystick/03_named_controls_usb.py",
+      "title": "Read named controller controls",
+      "block": 2,
+      "transport": "usb",
+      "kind": "script",
+      "sha256": "1ef78ce280570016617aed8e8cae25cc245e820559481aa18c47a2b6b3599686"
     },
     {
       "group": "joystick",
       "file": "joystick/02_full_controller.py",
       "title": "All named controller data",
-      "note": "Sticks, named buttons, analog triggers, status and motion."
+      "block": 3,
+      "transport": "network",
+      "kind": "script",
+      "sha256": "fe362bb531c1a30d78a02fe0fc0fa1842663dbbfd0ff195433938af399d3d503"
+    },
+    {
+      "group": "joystick",
+      "file": "joystick/02_full_controller_usb.py",
+      "title": "All named controller data",
+      "block": 4,
+      "transport": "usb",
+      "kind": "script",
+      "sha256": "e24d50eb98ccc92b60d964540cbe2002793e29863c650d4a5749f00abbd616ce"
     },
     {
       "group": "joystick",
       "file": "joystick/01_sticks_and_buttons.py",
       "title": "Old API: sticks and numbered buttons",
-      "note": "Existing numbered button fields remain supported."
+      "block": 5,
+      "transport": "network",
+      "kind": "script",
+      "sha256": "ea790abf6131d99e11fe3b88765801cc2d727e4c2ce2566508525178bcf23901"
+    },
+    {
+      "group": "joystick",
+      "file": "joystick/01_sticks_and_buttons_usb.py",
+      "title": "Old API: sticks and numbered buttons",
+      "block": 6,
+      "transport": "usb",
+      "kind": "script",
+      "sha256": "5f66886073aaa75fe0383301d135f388446ab0e337ac0b98e62a8477da84c796"
     },
     {
       "group": "airpods",
       "file": "airpods/01_rotation.py",
       "title": "AirPods rotation quaternion",
-      "note": "Rotation is a quaternion in x/y/z/w order."
+      "block": 1,
+      "transport": "network",
+      "kind": "script",
+      "sha256": "9456c0f8f22823bfad461ca02f6f7e8d8069453c15d3de77d78d790d089c004c"
+    },
+    {
+      "group": "airpods",
+      "file": "airpods/01_rotation_usb.py",
+      "title": "AirPods rotation quaternion",
+      "block": 2,
+      "transport": "usb",
+      "kind": "script",
+      "sha256": "aee120333e4e3fbb1d9ba4a10c6254711ce40bdd540a293418969c5b92845301"
     },
     {
       "group": "body",
       "file": "body/01_all_joints.py",
       "title": "Read every person and all native joints",
-      "note": "Select the App recognition model. Receive once, then read all people and their complete skeletons."
+      "block": 1,
+      "transport": "network",
+      "kind": "script",
+      "sha256": "4e3ffae5b99cf6023f4e53ff2f5c50cb1be4f1c34bb351cb26fd0f502f7262fe"
+    },
+    {
+      "group": "body",
+      "file": "body/01_all_joints_usb.py",
+      "title": "Read every person and all native joints",
+      "block": 2,
+      "transport": "usb",
+      "kind": "script",
+      "sha256": "558f00326e87db38a661ae06485a84e0b366d56659e6421c4e1bd473228ad65a"
     },
     {
       "group": "body",
       "file": "body/02_named_joints.py",
       "title": "Read shoulders, elbows, wrists, hips, knees and ankles",
-      "note": "Read twelve named joints on both sides of each person. Print body/world positions, rotations and quality; unavailable data is None."
+      "block": 3,
+      "transport": "network",
+      "kind": "script",
+      "sha256": "7f86e06dbe5d1faeb03b3273ceff850df4fc972e483bb2f56569f897076d9384"
+    },
+    {
+      "group": "body",
+      "file": "body/02_named_joints_usb.py",
+      "title": "Read shoulders, elbows, wrists, hips, knees and ankles",
+      "block": 4,
+      "transport": "usb",
+      "kind": "script",
+      "sha256": "5bc80c0cc997ddda9c20c1cfdda96eb708f250a0160a15f1f225538413649d5b"
     },
     {
       "group": "body",
       "file": "body/03_coordinate_spaces.py",
       "title": "Read skeleton arrays and compare body/world positions",
-      "note": "Print all twelve common rows with names, positions, rotations and availability masks. Use the default layout to retain all 33 MediaPipe or 91 ARKit joints."
+      "block": 5,
+      "transport": "network",
+      "kind": "script",
+      "sha256": "69521aba18e4cfc6ecb8c5ebe769732c871d32a62136dd21866133c9331e1881"
     },
     {
       "group": "body",
-      "file": "body/04_optional_skeleton.py",
-      "title": "Display all people in separate skeleton panels",
-      "note": "SHOW_SKELETON selects plotting. Each local body has its own origin and panel; the receiver preserves every native node."
-    },
-    {
-      "group": "upper_body",
-      "file": "upper_body/01_relative_joints.py",
-      "title": "Upper-body joints, angles and detection metadata",
-      "note": "The upper_body message contains neck, relative arm joints and angles. It is None when absent."
-    },
-    {
-      "group": "upper_body",
-      "file": "upper_body/02_optional_skeleton.py",
-      "title": "Enable or disable the upper-body skeleton",
-      "note": "Display the received frame. Close the window or press Ctrl-C to finish."
-    },
-    {
-      "group": "hand",
-      "file": "hand/01_both_hands.py",
-      "title": "Read all joints from both hands",
-      "note": "Print all 21 named joints separately for the left and right hand, including the wrist and every finger. Missing hands and joints are reported explicitly."
-    },
-    {
-      "group": "hand",
-      "file": "hand/02_named_joints_and_pixels.py",
-      "title": "Wrist and all five fingertips in image coordinates",
-      "note": "Read the wrist and all five fingertips of both hands, then convert normalized coordinates to pixels using image dimensions from the same frame."
-    },
-    {
-      "group": "hand",
-      "file": "hand/04_joint_arrays.py",
-      "title": "Read all hand joints as arrays",
-      "note": "Print names, points, confidences and validity separately for each hand, then read every row and select present joints with the validity mask."
-    },
-    {
-      "group": "hand",
-      "file": "hand/03_optional_skeleton.py",
-      "title": "Enable or disable both hand skeletons",
-      "note": "Use receive(timeout=50) so the window handles events even without new data. A timeout returns None; an empty hand observation is still a HandPoseFrame. Close the window or press Ctrl-C to finish."
-    },
-    {
-      "group": "face",
-      "file": "face/01_face.py",
-      "title": "Face observations and frame metadata",
-      "note": "Print face detection, points, expressions and pose."
-    },
-    {
-      "group": "face",
-      "file": "face/02_blendshapes.py",
-      "title": "All available facial movement coefficients",
-      "note": "Read all 52 named TrueDepth movement coefficients, including zeros. Dictionary values are Python float; missing channels return None with get(name)."
-    },
-    {
-      "group": "face",
-      "file": "face/03_metric_mesh.py",
-      "title": "Metric face vertices and triangle topology",
-      "note": "TrueDepth vertices are float32 face-local meters; uint32 triangles contain vertex IDs. Map IDs to array rows, then use the position and quaternion to transform vertices into camera coordinates."
-    },
-    {
-      "group": "face",
-      "file": "face/05_optional_plot.py",
-      "title": "Enable or disable the face plot",
-      "note": "Display the received frame. Close the window or press Ctrl-C to finish."
-    },
-    {
-      "group": "claw",
-      "file": "claw/01_first_gripper.py",
-      "title": "First gripper command and optional motor state",
-      "note": "angle is the App percent command. Optional motor state is printed as received."
-    },
-    {
-      "group": "claw",
-      "file": "claw/02_second_gripper.py",
-      "title": "Second gripper on a separate port",
-      "note": "The second gripper uses port 5401."
-    },
-    {
-      "group": "watch",
-      "file": "watch/01_batches.py",
-      "title": "Receive Watch HTTP batches continuously",
-      "note": "receive() returns one batch; batch.frames contains its motion samples."
-    },
-    {
-      "group": "watch",
-      "file": "watch/02_individual_samples.py",
-      "title": "Flatten batches into individual Watch samples",
-      "note": "Read each motion sample in the received batch."
-    },
-    {
-      "group": "watch",
-      "file": "watch/03_receive_methods.py",
-      "title": "Receive Watch samples",
-      "note": "Read motion samples from the received batch."
-    },
-    {
-      "group": "watch",
-      "file": "watch/04_payload_format_and_decode.py",
-      "title": "Select Watch payload format and decode a batch",
-      "note": "Select the format to match your Watch sender."
-    },
-    {
-      "group": "common",
-      "file": "common/07_receive_loop.py",
-      "title": "Receive one frame and read its fields",
-      "note": "receive() waits for a valid frame. Read all related fields from that frame; Ctrl-C stops and closes the receiver."
-    },
-    {
-      "group": "common",
-      "file": "common/01_options_timeout_and_cleanup.py",
-      "title": "Receiving with a timeout and status",
-      "note": "Use receive(timeout=1000); None means no valid frame arrived within 1000 milliseconds. Print status after receiving a frame."
-    },
-    {
-      "group": "common",
-      "file": "common/02_stream_callback.py",
-      "title": "Process a received frame",
-      "note": "Call your processing function with the received frame."
-    },
-    {
-      "group": "common",
-      "file": "common/03_named_stream_factory.py",
-      "title": "Discover streams and subscribe by name",
-      "note": "Choose a receiver with subscribe(stream_name, ip)."
-    },
-    {
-      "group": "common",
-      "file": "common/04_raw_protobuf.py",
-      "title": "Read raw Protobuf from a received frame",
-      "note": "Use frame.protobuf or receive a raw message with ProtobufSubscriber."
-    },
-    {
-      "group": "common",
-      "file": "common/05_save_protobuf_frame.py",
-      "title": "Save one received frame for offline decoding",
-      "note": "Wait for one frame, then save its reserialized Protobuf for offline decoding."
-    },
-    {
-      "group": "common",
-      "file": "common/06_decode_saved_frame.py",
-      "title": "Decode a saved typed frame without a socket",
-      "note": "Run the preceding save example first, then decode the saved data."
-    },
-    {
-      "group": "legacy",
-      "file": "legacy/01_magiclaw_combined.py",
-      "title": "Legacy combined MagiClaw publisher",
-      "note": "Requires an older combined publisher with a known port."
-    },
-    {
-      "group": "legacy",
-      "file": "legacy/02_watch_zmq.py",
-      "title": "Legacy Watch ZeroMQ publisher",
-      "note": "Requires an older Watch ZeroMQ publisher with a known port."
-    },
-    {
-      "group": "plotting",
-      "file": "plotting/01_manual_plotter.py",
-      "title": "Receive frames with an optional TrackingPlotter",
-      "note": "Display the received frame. Close the window or press Ctrl-C to finish."
-    },
-    {
-      "group": "plotting",
-      "file": "plotting/02_frame_plot.py",
-      "title": "frame.plot() or plot_tracking() with a shared window",
-      "note": "Display the received frame. Close the window or press Ctrl-C to finish."
-    },
-    {
-      "group": "plotting",
-      "file": "plotting/03_single_hand.py",
-      "title": "Plot a single Hand object",
-      "note": "Display the received frame. Close the window or press Ctrl-C to finish."
-    },
-    {
-      "group": "plotting",
-      "file": "plotting/04_save_without_window.py",
-      "title": "Save a real received skeleton without a window",
-      "note": "Save a received skeleton to PNG without opening a window."
-    },
-    {
-      "group": "face",
-      "file": "face/06_face_and_hands.py",
-      "title": "Receive hands from Face and Hand Tracking",
-      "note": "Run the face example in a second terminal to receive both outputs."
-    },
-    {
-      "group": "face",
-      "file": "face/07_field_types.py",
-      "title": "Inspect every face field and its Python type",
-      "note": "Print all FaceFrame fields, derived properties, array dtypes and shapes, bounding-box members and one landmark. A timeout returns None; a received no-face frame remains a FaceFrame."
-    },
-    {
-      "group": "face",
-      "file": "face/08_regions_and_box.py",
-      "title": "Read landmark regions and raw bounding-box pixels",
-      "note": "Group points by region without merging repeated Vision indices. Convert normalized bounding-box corners and points to continuous raw image pixels using the transmitted dimensions."
-    },
-    {
-      "group": "ar",
-      "file": "ar/09_intrinsics.py",
-      "title": "Scale intrinsics using verified reference dimensions",
-      "note": "Set REFERENCE_SIZE to the image size used for the intrinsics."
+      "file": "body/03_coordinate_spaces_usb.py",
+      "title": "Read skeleton arrays and compare body/world positions",
+      "block": 6,
+      "transport": "usb",
+      "kind": "script",
+      "sha256": "300872abbe649e7dc27d134dbe5a27e76531ea79ab7131ab18046c3e1e73400b"
     },
     {
       "group": "body",
       "file": "body/05_person_id.py",
       "title": "Keep one person by ID across frames",
-      "note": "Choose an initial track once. Look it up by ID; tracking loss does not substitute another person."
+      "block": 7,
+      "transport": "network",
+      "kind": "script",
+      "sha256": "dc1772f2e265a2960d985bd764022115c409cb8a3c93a176078a4fd4e787efbb"
+    },
+    {
+      "group": "body",
+      "file": "body/05_person_id_usb.py",
+      "title": "Keep one person by ID across frames",
+      "block": 8,
+      "transport": "usb",
+      "kind": "script",
+      "sha256": "7c33527ed6172416aedd66165cded9b0e9667735c3fe0c4aa528772eef70a030"
     },
     {
       "group": "body",
       "file": "body/06_image_landmarks.py",
       "title": "Read all raw-image landmarks and pixels",
-      "note": "MediaPipe supplies 33 image coordinates per person. Pixel conversion uses the raw image dimensions."
+      "block": 9,
+      "transport": "network",
+      "kind": "script",
+      "sha256": "5cd2af4a1b36dbdd2596b474ed9f74c788508c54064c9478c850f3ab244bfe13"
     },
     {
-      "group": "ar",
-      "file": "ar/10_selected_fields.py",
-      "title": "Original camera intrinsics scaling example",
-      "note": "Scale fx, fy, cx and cy from 1920 x 1440 to 640 x 480."
+      "group": "body",
+      "file": "body/06_image_landmarks_usb.py",
+      "title": "Read all raw-image landmarks and pixels",
+      "block": 10,
+      "transport": "usb",
+      "kind": "script",
+      "sha256": "3cfe5cf5cd2f7d2204abfcb5af43e8d10e91c1b43cc247bdc86c5d7a0cc63054"
     },
     {
-      "group": "ar",
-      "file": "ar/11_quick_start.py",
-      "title": "Quick Start AR receiving example",
-      "note": "AR quick start using direct frame fields."
+      "group": "body",
+      "file": "body/04_optional_skeleton.py",
+      "title": "Display all people in separate skeleton panels",
+      "block": 11,
+      "transport": "network",
+      "kind": "script",
+      "sha256": "b6ebb492323ba4769130b47d26f62dd98c65a5ba3bd2d3bc5797f640ca7d2f60"
     },
     {
-      "group": "ar",
-      "file": "ar/12_authored_continuous.py",
-      "title": "Authored AR continuous receiving example",
-      "note": "The AR guide retains this original top-level receiving loop; edit its IP before running."
+      "group": "body",
+      "file": "body/04_optional_skeleton_usb.py",
+      "title": "Display all people in separate skeleton panels",
+      "block": 12,
+      "transport": "usb",
+      "kind": "script",
+      "sha256": "c37602333f70ba9d80c5e836639207c4ee8cdc262ecb61cbfa239127d0fd135a"
     },
     {
-      "group": "imu",
-      "file": "imu/02_quick_start.py",
-      "title": "Original Quick Start IMU receiving example",
-      "note": "IMU quick start using direct frame fields."
+      "group": "upper_body",
+      "file": "upper_body/01_relative_joints.py",
+      "title": "Upper-body joints, angles and detection metadata",
+      "block": 1,
+      "transport": "network",
+      "kind": "script",
+      "sha256": "f53626803a336fd588738cd7bcdf407a6115f286b22f81d16e6c75243a9da9b4"
+    },
+    {
+      "group": "upper_body",
+      "file": "upper_body/01_relative_joints_usb.py",
+      "title": "Upper-body joints, angles and detection metadata",
+      "block": 2,
+      "transport": "usb",
+      "kind": "script",
+      "sha256": "5899904b1051ce14f60323b30cb94aba7fedfe684d62701f10ea1929a32a9f11"
+    },
+    {
+      "group": "hand",
+      "file": "hand/01_both_hands.py",
+      "title": "Read all joints from both hands",
+      "block": 1,
+      "transport": "network",
+      "kind": "script",
+      "sha256": "679e37bae3ab776c163e3193672948367becb2717986a6c3cddebc17f4ac8559"
+    },
+    {
+      "group": "hand",
+      "file": "hand/01_both_hands_usb.py",
+      "title": "Read all joints from both hands",
+      "block": 2,
+      "transport": "usb",
+      "kind": "script",
+      "sha256": "1bc6544aabaacf3550b9a6f764cba7c020265695e8f8b44163c88409505e4578"
+    },
+    {
+      "group": "hand",
+      "file": "hand/02_named_joints_and_pixels.py",
+      "title": "Wrist and all five fingertips in image coordinates",
+      "block": 3,
+      "transport": "network",
+      "kind": "script",
+      "sha256": "bbd36ec2ec7cb40450af6d3ddf240ee585ef00e2af8e81f80b1d2d11dcb7cc31"
+    },
+    {
+      "group": "hand",
+      "file": "hand/02_named_joints_and_pixels_usb.py",
+      "title": "Wrist and all five fingertips in image coordinates",
+      "block": 4,
+      "transport": "usb",
+      "kind": "script",
+      "sha256": "07e7eff48f5ac4ed844000b3300e6a1f3733a95aa2012f817566e645564cbb96"
+    },
+    {
+      "group": "hand",
+      "file": "hand/04_joint_arrays.py",
+      "title": "Read all hand joints as arrays",
+      "block": 5,
+      "transport": "network",
+      "kind": "script",
+      "sha256": "7bff7095bbe3c686b807010a6e407dc66db6b2516213efab5a5a8c8e6fc5e6af"
+    },
+    {
+      "group": "hand",
+      "file": "hand/04_joint_arrays_usb.py",
+      "title": "Read all hand joints as arrays",
+      "block": 6,
+      "transport": "usb",
+      "kind": "script",
+      "sha256": "1199e54be731c55a1e7a2879aed05543d2b5e2f08d1261051cdfd121d8333aea"
+    },
+    {
+      "group": "hand",
+      "file": "hand/03_optional_skeleton.py",
+      "title": "Enable or disable both hand skeletons",
+      "block": 7,
+      "transport": "network",
+      "kind": "script",
+      "sha256": "e6d417c281de57134a4f8ec010a5951dc34d586205110bd65618de6be04819b6"
+    },
+    {
+      "group": "hand",
+      "file": "hand/03_optional_skeleton_usb.py",
+      "title": "Enable or disable both hand skeletons",
+      "block": 8,
+      "transport": "usb",
+      "kind": "script",
+      "sha256": "b77da600866dfaee0763893431632a8b743db9a2ac05e84532ee5cb541d32130"
+    },
+    {
+      "group": "face",
+      "file": "face/01_face.py",
+      "title": "Face observations and frame metadata",
+      "block": 1,
+      "transport": "network",
+      "kind": "script",
+      "sha256": "bfa46d2934c13abca73a14e88090ec6681ebf0122fc95a12372237de3e7ee5aa"
+    },
+    {
+      "group": "face",
+      "file": "face/01_face_usb.py",
+      "title": "Face observations and frame metadata",
+      "block": 2,
+      "transport": "usb",
+      "kind": "script",
+      "sha256": "820931142ea63984e9d544ab034929c952282da643ba116089d09175f5af68bc"
+    },
+    {
+      "group": "face",
+      "file": "face/02_blendshapes.py",
+      "title": "All available facial movement coefficients",
+      "block": 3,
+      "transport": "network",
+      "kind": "script",
+      "sha256": "001f1425a22bc8ffc2af1d12748f85d8d9e6e053eab84bbceeaa8b2415aa2b98"
+    },
+    {
+      "group": "face",
+      "file": "face/02_blendshapes_usb.py",
+      "title": "All available facial movement coefficients",
+      "block": 4,
+      "transport": "usb",
+      "kind": "script",
+      "sha256": "88cf18f37277f716b50b6238529e2f6a0ff129864eb7ffba4f9d9b7a652fd98d"
+    },
+    {
+      "group": "face",
+      "file": "face/08_regions_and_box.py",
+      "title": "Read landmark regions and raw bounding-box pixels",
+      "block": 5,
+      "transport": "network",
+      "kind": "script",
+      "sha256": "c6cf9a14e266c0cb7fa1bafbbf848c71dcb732a11fe3abefba3d713b26db44dc"
+    },
+    {
+      "group": "face",
+      "file": "face/08_regions_and_box_usb.py",
+      "title": "Read landmark regions and raw bounding-box pixels",
+      "block": 6,
+      "transport": "usb",
+      "kind": "script",
+      "sha256": "fa75e90d74af94d8641e1bc1913d32aa901a5bade38be37b1a38d47f5f7efe0e"
+    },
+    {
+      "group": "face",
+      "file": "face/03_metric_mesh.py",
+      "title": "Metric face vertices and triangle topology",
+      "block": 7,
+      "transport": "network",
+      "kind": "script",
+      "sha256": "d182ed6235207a6fc6370600ab6ecdd42e25398cf981619205e158e3caea2b09"
+    },
+    {
+      "group": "face",
+      "file": "face/03_metric_mesh_usb.py",
+      "title": "Metric face vertices and triangle topology",
+      "block": 8,
+      "transport": "usb",
+      "kind": "script",
+      "sha256": "0e15d1d987564b78126d961704fd27974dfb7d4f5b6eaf332e3d5d3ca0dbe8e6"
+    },
+    {
+      "group": "face",
+      "file": "face/07_field_types.py",
+      "title": "Inspect every face field and its Python type",
+      "block": 9,
+      "transport": "network",
+      "kind": "script",
+      "sha256": "61268efafd07406f23a35210906795e3509103f348918f42e0d1db747168a954"
+    },
+    {
+      "group": "face",
+      "file": "face/07_field_types_usb.py",
+      "title": "Inspect every face field and its Python type",
+      "block": 10,
+      "transport": "usb",
+      "kind": "script",
+      "sha256": "7b981de69addbd890163e9c42558148a03f807ca8a1e7dc69df858afff33bb98"
     }
   ]
 }

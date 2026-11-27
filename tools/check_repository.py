@@ -1,5 +1,7 @@
 """Check publication boundaries, local Markdown links and package versions."""
 import ast
+import hashlib
+import json
 from pathlib import Path
 import re
 import subprocess
@@ -8,7 +10,7 @@ from urllib.parse import unquote, urlsplit
 ROOT = Path(__file__).resolve().parents[1]
 DIRECTORIES = {".github", "asmagic", "docs", "examples", "tests", "tools"}
 ROOT_FILES = {
-    ".gitattributes", ".gitignore", "CHANGELOG.md", "CONTRIBUTING.md", "LICENSE",
+    ".gitattributes", ".gitignore", "AGENTS.md", "CHANGELOG.md", "CONTRIBUTING.md", "LICENSE",
     "MANIFEST.in", "README.md", "README.zh-CN.md", "pyproject.toml",
 }
 IGNORED = {".git", ".venv", "__pycache__", ".pytest_cache", ".ruff_cache",
@@ -27,7 +29,8 @@ def publication_files():
             ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
             cwd=str(ROOT), check=True, stdout=subprocess.PIPE,
         )
-        return [ROOT / name for name in result.stdout.decode("utf-8").split("\0") if name]
+        return [ROOT / name for name in result.stdout.decode("utf-8").split("\0")
+                if name and ((ROOT / name).exists() or (ROOT / name).is_symlink())]
     return [p for p in ROOT.rglob("*") if p.is_file()
             and not any(part in IGNORED or part.endswith(".egg-info")
                         for part in p.relative_to(ROOT).parts)]
@@ -35,6 +38,22 @@ def publication_files():
 
 def main():
     errors = []
+    manifest = json.loads((ROOT / "tools/retired-examples.json").read_text())
+    archive = (ROOT / manifest["archive"]).read_text()
+    blocks = re.findall(r"^```python\n(.*?)^```", archive, re.MULTILINE | re.DOTALL)
+    retirements = manifest["retirements"]
+    if len(blocks) != len(retirements):
+        errors.append("Retired example archive and manifest counts differ")
+    for item in retirements:
+        index = item["archive_block"] - 1
+        if (not 0 <= index < len(blocks) or not item["reason"]
+                or hashlib.sha256(blocks[index].encode()).hexdigest() != item["sha256"]):
+            errors.append("Retired example hash or reason differs: " + item["file"])
+            continue
+        if (ROOT / ".git").exists():
+            original = subprocess.check_output(["git", "show", manifest["baseline"] + ":" + item["file"]], cwd=ROOT)
+            if hashlib.sha256(original).hexdigest() != item["sha256"]:
+                errors.append("Retired example differs from its baseline: " + item["file"])
     files = publication_files()
     for path in files:
         relative = path.relative_to(ROOT)

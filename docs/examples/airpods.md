@@ -1,18 +1,10 @@
-# AirPods Receiving Examples
+# AirPods Motion
 
-AirPods head rotation.
+Code copied verbatim from [the GitBook chapter](https://doc.ancoraspring.com/asmagic/python-sdk/receiving-streamed-data/airpods-and-gripper). See that chapter for setup, data formats and limitations.
 
-[All examples](index.md) · [Data format and API](api-reference.md)
-
-Replace `IPHONE_IP` with your iPhone's IP and start the matching App output. For Watch, enter your computer's IP on Watch. Ctrl-C stops receiving.
-
-## Example 1: AirPods rotation quaternion
-
-Rotation is a quaternion in x/y/z/w order.
+## AirPods rotation quaternion (Network)
 
 Source: [airpods/01_rotation.py](../../examples/documentation/airpods/01_rotation.py)
-
-Run from the SDK project directory:
 
 ```bash
 python examples/documentation/airpods/01_rotation.py
@@ -22,6 +14,37 @@ python examples/documentation/airpods/01_rotation.py
 from asmagic import AirPodsDataSubscriber
 
 IPHONE_IP = "192.168.1.100"  # Replace with your iPhone's IP address.
+
+
+def main():
+    sub = AirPodsDataSubscriber(IPHONE_IP)
+    try:
+        while True:
+            frame = sub.receive()
+            print("Time:", frame.timestamp)
+            print("Rotation:", frame.rotation)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        sub.close()
+
+
+if __name__ == "__main__":
+    main()
+```
+
+## AirPods rotation quaternion (USB)
+
+Source: [airpods/01_rotation_usb.py](../../examples/documentation/airpods/01_rotation_usb.py)
+
+```bash
+python examples/documentation/airpods/01_rotation_usb.py
+```
+
+```python
+from asmagic import AirPodsDataSubscriber
+
+IPHONE_IP = "usb"  # Use usb:DEVICE_UDID to select a specific iPhone.
 
 
 def main():

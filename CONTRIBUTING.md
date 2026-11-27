@@ -35,7 +35,20 @@ The tests use local TCP and HTTP servers, synthetic messages, and checked-in fix
 - Keep examples runnable with editable settings at the top, bounded waits where a window needs updates, and deterministic receiver cleanup.
 - Include Python, OS, SDK and app versions in bug reports, along with a minimal script and the relevant traceback. Remove private addresses and personal data from attachments.
 
-Documentation examples live in `examples/documentation/`; their titles and notes are in `catalog.json`. After editing them, run `python tools/sync_documentation_examples.py` to update the corresponding Markdown pages. Detailed body, hand and face guides are also maintained in this repository.
+Documentation examples in `examples/documentation/` must be byte-for-byte copies of the corresponding GitBook Python blocks, including Network and USB variants. `catalog.json` maps every file to its chapter and block and records its SHA-256. Do not add independent wrappers or divergent examples.
+
+After an authorized GitBook code change, import the chapter code and verify it:
+
+```bash
+python tools/sync_documentation_examples.py --gitbook ../gitbook
+python tools/sync_documentation_examples.py --check --gitbook ../gitbook
+```
+
+Import only copies GitBook code into the SDK; it never overwrites authored GitBook pages. Update catalog mappings deliberately when blocks or chapters are added or removed. CI checks against the recorded GitBook hashes and generated local references. A local check automatically compares with the sibling GitBook checkout when present; `--gitbook` selects another checkout.
+
+Keep user-run examples in `examples/documentation/` and automated synthetic/local-transport regression tests in `tests/`. Device diagnostics use the installed `asmagic-test` command; they do not need example wrappers.
+
+Retired or replaced scripts are preserved in the developer-only `tools/retired-examples.md` archive. Its manifest records their baseline, original path, hash and reason; `tools/check_repository.py` validates those records. The archive is not an active example directory.
 
 ## Protocol changes
 

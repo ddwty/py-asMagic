@@ -1,4 +1,4 @@
-"""Copy standalone example sources into Markdown; --check detects any drift."""
+"""Import GitBook chapter code verbatim; --check rejects example drift."""
 import argparse
 import ast
 import json
@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 SOURCE = ROOT / "examples" / "documentation"
 DESTINATION = ROOT / "docs" / "examples"
-PYTHON_BLOCK = re.compile(r"```(?:python|py)\n(.*?)```", re.DOTALL)
+PYTHON_BLOCK = re.compile(r"^```(?:python|py)[^\n]*\n(.*?)^```", re.MULTILINE | re.DOTALL)
 
 
 def joint_catalog():
@@ -67,168 +67,154 @@ def joint_catalog():
     return "\n".join(page)
 
 
+def catalog():
+    data = json.loads((SOURCE / 'catalog.json').read_text(encoding='utf-8'))
+    paths = [entry['file'] for entry in data['examples']]
+    discovered = {p.relative_to(SOURCE).as_posix() for p in SOURCE.rglob('*.py')}
+    if len(paths) != len(set(paths)) or set(paths) != discovered:
+        raise ValueError('catalog.json must list every example exactly once')
+    groups = [group['id'] for group in data['groups']]
+    pages = [group['page'] for group in data['groups']]
+    if (len(set(groups)) != len(groups) or len(set(pages)) != len(pages)
+            or any(entry['group'] not in groups for entry in data['examples'])):
+        raise ValueError('Duplicate chapter mappings or unknown example groups')
+    all_scripts = {p.relative_to(ROOT / 'examples').as_posix() for p in (ROOT / 'examples').rglob('*.py')}
+    if all_scripts != {'documentation/' + path for path in paths}:
+        raise ValueError('Keep all user-run examples in the mapped documentation directory')
+    return data
+
+
 def documents():
-    catalog = json.loads((SOURCE / "catalog.json").read_text(encoding="utf-8"))
-    groups = catalog["groups"]
-    entries = catalog["examples"]
-    known_groups = {group["id"] for group in groups}
-    paths = [entry["file"] for entry in entries]
-    if len(paths) != len(set(paths)) or any(entry["group"] not in known_groups for entry in entries):
-        raise ValueError("Duplicate example paths or unknown groups in catalog.json")
-    discovered = {path.relative_to(SOURCE).as_posix() for path in SOURCE.rglob("*.py")}
-    if set(paths) != discovered:
-        raise ValueError("catalog.json does not match the standalone Python files")
-
-    rows = ["| Documentation page | Files | Examples |", "|---|---|---:|"]
-    for group in groups:
-        selected = [entry for entry in entries if entry["group"] == group["id"]]
-        rows.append("| [{title}]({id}.md) | [{id}/](../../examples/documentation/{id}/) | {count} |".format(
-            count=len(selected), **group))
-        page = ["# " + group["title"], "", group["intro"], "",
-                "[All examples](index.md) · [Data format and API](api-reference.md)", ""]
-        if group["id"] != "camera":
-            page.extend(["Replace `IPHONE_IP` with your iPhone's IP and start the matching App output. "
-                         "For Watch, enter your computer's IP on Watch. Ctrl-C stops receiving.", ""])
-        for number, entry in enumerate(selected, 1):
-            script = "examples/documentation/" + entry["file"]
-            code = (SOURCE / entry["file"]).read_text(encoding="utf-8").rstrip()
-            if "```" in code:
-                raise ValueError("An example contains a Markdown fence")
-            heading = "## " + entry["title"] if group["id"] == "camera" else "## Example {}: {}".format(number, entry["title"])
-            page.extend([heading, "", entry["note"], "",
-                         "Source: [{}](../../{})".format(entry["file"], script), "",
-                         "Run from the SDK project directory:", "", "```bash", "python " + script, "```", "",
-                         "```python", code, "```", ""])
-        yield DESTINATION / (group["id"] + ".md"), "\n".join(page)
-
-    index = """# Runnable documentation examples
-
-Each documentation example has its own independent `.py` file in `examples/documentation/`.
-The Python code blocks on these pages are copied verbatim from those files. They import the installed SDK
-directly, without `_common.py`, CLI arguments, a test runner or fixtures.
-Basic loops use `receive()`, which waits for a valid frame. Use `receive(timeout=...)` for timeouts.
-
-## Install the local SDK
-
-From the project directory containing `pyproject.toml`:
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -e .
-```
-
-On Windows, activate with `.venv\\Scripts\\activate`. Python 3.8+ is supported.
-The default installation includes Matplotlib for skeleton plots and PyAV for HEVC images, along with every other runtime dependency.
-Users do not need to choose extras. Displaying a skeleton remains an API choice, off by default.
-These examples target SDK 1.0.2 or newer. Install it with `python -m pip install --upgrade "asmagic>=1.0.2"`.
-
-## Run each example yourself
-
-1. Open the feature being tested in the App and start its data output.
-2. For ZeroMQ examples, replace `IPHONE_IP = "192.168.1.100"` with the iPhone address on the same LAN.
-3. For Watch, start the Python receiver and set the Watch destination to this computer's LAN IP and listening port.
-4. Run the corresponding file from the project directory; Ctrl-C stops receiving.
-
-```bash
-python examples/documentation/ar/01_continuous.py
-python examples/documentation/body/04_optional_skeleton.py
-python examples/documentation/hand/03_optional_skeleton.py
-```
-
-Camera features can need separate sessions; test one feature at a time. These scripts never mark a real App
-test as passed. Check the printed values and compare plots with your actual actions.
-
-## Choose whether to display a skeleton
-
-Body, upper-body, hand and face/hand pages include a complete optional plotting example.
-Set `SHOW_SKELETON = True` to display the figure or `False` to receive only.
-The standard examples receive with receive(); no window is created when SHOW_SKELETON=False.
-Use `PLOT_OPTIONS` to set labels, drawing frequency and stale-data timeout;
-3D body plots support body or world coordinates. Plots run on the main thread.
-`CameraFrame.color_bytes` returns encoded JPEG/HEVC data. Use `data.show_image()` to display an upright camera image.
-
-## Pages and files
-
-""" + "\n".join(rows) + """
-
-See [Data Format and API](api-reference.md) for method signatures, return values, units and missing-data behavior.
-The [joint catalog](joint-catalog.md) lists the available body/hand joints, Python paths and array rows.
-Legacy pages are compatibility examples for old publishers with known ports, not current App features.
-
-## Keep documentation and executable code identical
-
-The source of each Python block is its standalone file; its title and notes are in
-`examples/documentation/catalog.json`. After editing a file or note:
-
-```bash
-python tools/sync_documentation_examples.py
-python tools/sync_documentation_examples.py --check
-```
-
-The first command updates Markdown pages. The second verifies that synchronized code and tables match their
-source files. All inputs and generated pages are contained in this repository.
-The separate `examples/test_app_streams.py` guided diagnostic tool remains available; it is not required for these examples.
-"""
-    yield DESTINATION / "index.md", index
-    yield DESTINATION / "joint-catalog.md", joint_catalog()
-    summary = ["# Table of contents", "", "* [Runnable documentation examples](index.md)",
-               "* [Data Format and API](api-reference.md)", "* [Joint catalog](joint-catalog.md)"]
-    summary.extend("* [{title}]({id}.md)".format(**group) for group in groups)
-    yield DESTINATION / "SUMMARY.md", "\n".join(summary) + "\n"
-
-    readme = ["# Runnable examples", "",
-              "Each script imports the installed SDK directly and can be run independently.",
-              "Edit the IP address and display settings at the top, then run it from the repository root.",
-              "For Watch, configure the device to send to your computer's address.", "",
-              "[Setup and guides](../../docs/examples/index.md) · [Data format and API](../../docs/examples/api-reference.md)", "",
-              "| File | Example |", "|---|---|"]
-    readme.extend("| [{file}]({file}) | {title} |".format(**entry) for entry in entries)
-    readme.extend(["", "Set `SHOW_SKELETON = True/False` to toggle tracking plots. `frame.show_images()` displays color and depth by default; pass `show_depth=False` or `show_color=False` to disable either view.",
-                   "Run `python tools/sync_documentation_examples.py --check` to check that documentation and source code match.", ""])
-    yield SOURCE / "README.md", "\n".join(readme)
-    camera_preview = SOURCE / "camera" / "01_preview.py"
-    if camera_preview.is_file():
-        yield ROOT / "examples" / "camera_only.py", camera_preview.read_text(encoding="utf-8")
-
-    mapping = json.loads((ROOT / "tools" / "sdk_examples.json").read_text(encoding="utf-8"))
-    for relative, files in mapping.items():
-        path = ROOT / relative
-        content = path.read_text(encoding="utf-8")
-        if len(PYTHON_BLOCK.findall(content)) != len(files):
-            raise ValueError("SDK guide block count differs from manifest: " + relative)
-        sources = iter(files)
-
-        def block(match):
-            name = next(sources)
-            code = (SOURCE / name).read_text(encoding="utf-8").rstrip()
-            ast.parse(code, filename=name)
-            return "```python\n" + code + "\n```"
-
-        yield path, PYTHON_BLOCK.sub(block, content)
+    """Generate local reference pages from the exact GitBook code copies."""
+    data = catalog()
+    rows = []
+    readme = ['# GitBook examples', '',
+              'These files contain the exact Python code shown in the corresponding GitBook chapters, including each Network and USB tab. Files ending in `_usb.py` use USB.', '',
+              'Install this checkout with `python -m pip install -e .`. Run scripts from the SDK directory; edit the connection and model settings at the top when needed. Start the matching output in asMagic first.', '',
+              'For USB, connect a data cable, unlock and trust the computer, and keep asMagic in the foreground. Use `asmagic usb list` to find a device; replace `"usb"` with `"usb:DEVICE_UDID"` when several are attached.', '',
+              '```bash',
+              'python examples/documentation/imu/01_all_sensors_usb.py',
+              'python examples/documentation/camera/01_preview_usb.py',
+              'python examples/documentation/hand/03_optional_skeleton_usb.py',
+              '```', '',
+              'Body examples select ARKit or MediaPipe with `MODEL`; match the app setting.', '',
+              '## Chapters and files', '',
+              '| GitBook chapter | Local file | Connection | Type |', '|---|---|---|---|']
+    base = 'https://doc.ancoraspring.com/asmagic/python-sdk/receiving-streamed-data/'
+    for group in data['groups']:
+        url = base + group['page'][:-3]
+        entries = [e for e in data['examples'] if e['group'] == group['id']]
+        page = ['# ' + group['title'], '',
+                'Code copied verbatim from [the GitBook chapter](' + url + '). See that chapter for setup, data formats and limitations.', '']
+        for entry in entries:
+            code = (SOURCE / entry['file']).read_text(encoding='utf-8')
+            ast.parse(code, filename=entry['file'])
+            label = entry['transport'].upper() if entry['transport'] == 'usb' else entry['transport'].capitalize()
+            page += ['## ' + entry['title'] + ' (' + label + ')', '',
+                     'Source: [' + entry['file'] + '](../../examples/documentation/' + entry['file'] + ')', '']
+            if entry['kind'] == 'script':
+                page += ['```bash', 'python examples/documentation/' + entry['file'], '```', '']
+            else:
+                page += ['Fragment: use `data` from the camera receiving loop.', '']
+            page += ['```python\n' + code + '```', '']
+            readme.append('| [{}]({}) | [{}]({}) | {} | {} |'.format(
+                group['title'], url, entry['file'], entry['file'], label, entry['kind']))
+        rows.append('| [{}]({}.md) | {} |'.format(group['title'], group['id'], len(entries)))
+        yield DESTINATION / (group['id'] + '.md'), '\n'.join(page)
+    readme += ['', '## Device checks', '',
+               'The installed diagnostic command checks all supported typed streams, including USB Watch relay and both grippers. It prompts for each app feature and saves a JSON report. Skip channels without the required hardware.', '',
+               '```bash', 'asmagic-test --all --transport usb --plot --images --report reports/usb.json',
+               'asmagic-test --list --transport usb', '```', '',
+               'Watch relay requires Watch → iPhone HTTP on port 18002, then iPhone → computer USB. The legacy combined face/hand decoder is available in the SDK; current apps send face and hands independently.', '',
+               'SDK regression tests live in `tests/`; they use synthetic inputs and local transports. They do not establish physical USB behavior or tracking accuracy.', '',
+               '## Keep the code identical', '',
+               'GitBook is the authority for these examples. After changing chapter code, import it and run the drift check:', '',
+               '```bash', 'python tools/sync_documentation_examples.py --gitbook ../gitbook',
+               'python tools/sync_documentation_examples.py --check --gitbook ../gitbook', '```', '',
+               'The catalog records the chapter, Python block number, transport and SHA-256 of each file. Add or remove mappings deliberately when chapter blocks change. Do not create independent example implementations.', '']
+    yield SOURCE / 'README.md', '\n'.join(readme)
+    yield ROOT / 'examples' / 'README.md', '# Examples\n\n[Chapter-by-chapter files, USB scripts and device checks](documentation/README.md).\n'
+    index = ['# GitBook examples', '',
+             '[Local files and USB testing](../../examples/documentation/README.md). Every Python block in the mapped GitBook chapters has an identical local file.', '',
+             '| Chapter | Python blocks |', '|---|---:|'] + rows + ['',
+             '[Data format and API](api-reference.md) · [Joint catalog](joint-catalog.md)', '']
+    yield DESTINATION / 'index.md', '\n'.join(index)
+    yield DESTINATION / 'joint-catalog.md', joint_catalog()
+    summary = ['# Table of contents', '', '* [GitBook examples](index.md)',
+               '* [Data Format and API](api-reference.md)', '* [Joint catalog](joint-catalog.md)']
+    summary += ['* [{}]({}.md)'.format(g['title'], g['id']) for g in data['groups']]
+    yield DESTINATION / 'SUMMARY.md', '\n'.join(summary) + '\n'
 
 
-def main():
+def gitbook_sources(root, data):
+    """Refuse incomplete mappings instead of silently losing chapter examples."""
+    folder = root / 'asMagic/doc/receiving-streamed-data'
+    pages = {p.name for p in folder.glob('*.md') if PYTHON_BLOCK.search(p.read_text(encoding='utf-8'))}
+    mapped = {group['page'] for group in data['groups']}
+    if pages != mapped:
+        raise ValueError('GitBook Python chapter inventory differs: ' + str(sorted(pages ^ mapped)))
+    result = {}
+    for group in data['groups']:
+        content = (folder / group['page']).read_text(encoding='utf-8')
+        blocks = PYTHON_BLOCK.findall(content)
+        entries = [e for e in data['examples'] if e['group'] == group['id']]
+        if sorted(e['block'] for e in entries) != list(range(1, len(blocks) + 1)):
+            raise ValueError('GitBook block inventory differs: ' + group['page'])
+        for entry in entries:
+            code = blocks[entry['block'] - 1]
+            ast.parse(code, filename=entry['file'])
+            result[entry['file']] = code
+    return result
+
+
+def main(argv=None):
+    import hashlib
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--check", action="store_true", help="Check without editing Markdown")
-    args = parser.parse_args()
-    stale = []
-    count = 0
-    outputs = list(documents())
-    for path, content in outputs:
-        count += 1
-        if args.check:
-            if not path.is_file() or path.read_text(encoding="utf-8") != content:
-                stale.append(str(path))
-        else:
-            path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(content, encoding="utf-8")
-    if stale:
-        print("Out-of-date documentation:", *stale, sep="\n")
+    parser.add_argument('--check', action='store_true', help='Check without modifying files')
+    parser.add_argument('--gitbook', type=Path, help='GitBook checkout to import or compare')
+    args = parser.parse_args(argv)
+    try:
+        data = catalog()
+        gitbook = args.gitbook
+        if gitbook is None and (ROOT.parent / 'gitbook/asMagic/doc').is_dir():
+            gitbook = ROOT.parent / 'gitbook'
+        originals = gitbook_sources(gitbook, data) if gitbook is not None else {}
+        stale = []
+        for entry in data['examples']:
+            path = SOURCE / entry['file']
+            code = path.read_text(encoding='utf-8')
+            expected = originals.get(entry['file'], code)
+            digest = hashlib.sha256(expected.encode()).hexdigest()
+            if args.check:
+                if code != expected or entry['sha256'] != digest:
+                    stale.append(str(path))
+            elif originals:
+                path.write_text(expected, encoding='utf-8')
+                entry['sha256'] = digest
+            elif entry['sha256'] != digest:
+                raise ValueError('Source hash changed; import from GitBook: ' + entry['file'])
+        if not args.check and originals:
+            (SOURCE / 'catalog.json').write_text(json.dumps(data, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
+        outputs = list(documents())
+        for path, content in outputs:
+            if args.check:
+                if not path.is_file() or path.read_text(encoding='utf-8') != content:
+                    stale.append(str(path))
+            else:
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(content, encoding='utf-8')
+        if stale:
+            print('Examples differ from GitBook or generated references:', *stale, sep='\n')
+            return 1
+        print('{} {} examples ({} USB), {} local reference files{}'.format(
+            'Verified' if args.check else 'Synchronized', len(data['examples']),
+            sum(e['transport'] == 'usb' for e in data['examples']), len(outputs),
+            '; compared with GitBook' if originals else '; recorded GitBook hashes checked'))
+        return 0
+    except (ValueError, OSError, SyntaxError) as error:
+        print(str(error), file=sys.stderr)
         return 1
-    print("{} {} documentation files".format("Verified" if args.check else "Updated", count))
-    return 0
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     raise SystemExit(main())

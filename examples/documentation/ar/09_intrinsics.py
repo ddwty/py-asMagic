@@ -1,23 +1,13 @@
 from asmagic import ARDataSubscriber
 
-IPHONE_IP = "192.168.1.100"  # Replace with your iPhone's IP address.
-
-
-def main():
-    sub = ARDataSubscriber(IPHONE_IP)
-    try:
-        while True:
-            frame = sub.receive()
-            print("Time:", frame.timestamp)
-            print("Velocity:", frame.velocity)
-            print("Local pose:", frame.local_pose)
-            print("Global pose:", frame.global_pose)
-            print("Intrinsics:", frame.camera_intrinsics)
-    except KeyboardInterrupt:
-        pass
-    finally:
-        sub.close()
-
-
-if __name__ == "__main__":
-    main()
+with ARDataSubscriber("192.168.1.100") as sub:
+    for data in sub:
+        K_rgb = data.camera_intrinsics_matrix
+        if K_rgb is None or data.rgb_width <= 0 or data.rgb_height <= 0:
+            continue
+        print("RGB intrinsics:", K_rgb)
+        if data.has_depth_image:
+            K_depth = K_rgb.copy()
+            K_depth[0, :] *= data.depth_width / data.rgb_width
+            K_depth[1, :] *= data.depth_height / data.rgb_height
+            print("Registered depth intrinsics:", K_depth)

@@ -20,19 +20,17 @@ python -m pip install asmagic
 
 ## USB 连接
 
-现有接收代码只需将 iPhone IP 换成 `"usb"`：
-
-```python
-import asmagic
-
-with asmagic.IMUDataSubscriber("usb") as sub:
-    for frame in sub:
-        print(frame.accelerometer)
-```
+按章节运行[本地 USB 示例](examples/documentation/README.md)；每个 `_usb.py` 文件与 GitBook 对应 USB 页签中的代码逐字一致。
 
 运行 `asmagic usb list` 发现有线设备，`asmagic usb setup` 配置新电脑的系统 USB 支持。
 [USB 使用说明](docs/USB.md)包含 Mac、Windows、Linux、树莓派及双向通信示例。
-需要 SDK 1.1.0+ 和支持 USB 的 iPhone 版本。完整步骤见 [GitBook USB 指南](https://doc.ancoraspring.com/asmagic/python-sdk/receiving-streamed-data/usb-connection)。
+需要 SDK 1.1.0+ 和支持 USB 的 iPhone 版本。完整步骤见 [GitBook USB 指南](https://doc.ancoraspring.com/asmagic/python-sdk/receiving-streamed-data/quick-start#usb-connection)。
+
+```bash
+asmagic-test --all --transport usb --plot --images --report reports/usb.json
+```
+
+[设备测试与报告](docs/device-testing.md)。
 
 ## 参与贡献
 

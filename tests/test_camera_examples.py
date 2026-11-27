@@ -56,6 +56,9 @@ def test_save_image_converts_rgb_and_reports_write_failure(monkeypatch):
             return self
 
         def __exit__(self, *args):
+            self.close()
+
+        def close(self):
             closed.append(True)
 
         def receive(self, timeout):
@@ -85,7 +88,3 @@ def test_camera_receives_selected_resolution_over_tcp(publisher, size):
     frame = receiver.receive(timeout=2000)
     assert (frame.width, frame.height) == size
     assert frame.image_upright.shape == (size[1], size[0], 3)
-
-
-def test_legacy_camera_example_matches_documentation_source():
-    assert (ROOT / "examples" / "camera_only.py").read_text() == (EXAMPLES / "01_preview.py").read_text()

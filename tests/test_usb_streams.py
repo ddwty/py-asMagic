@@ -1,5 +1,6 @@
 """Every public stream decoder receives over the same framed USB session."""
 import io
+import json
 
 import numpy as np
 from PIL import Image
@@ -9,6 +10,24 @@ import asmagic
 from asmagic.proto import (armpose_msg_pb2, multi_person_pose_pb2,
                            phone_msg_pb2, watch_batch_msg_pb2)
 from test_usb import mux
+
+
+@pytest.mark.parametrize("arguments", [
+    ["--transport", "usb", "--udid", "test-usb"], ["--ip", "usb:test-usb"],
+])
+def test_device_cli_receives_usb_without_network_ip_and_writes_report(mux, tmp_path, arguments):
+    from asmagic.cli import main
+    from asmagic.proto import imu_msg_pb2
+    _, received = mux
+    received.stream_payloads = {"iphone.stream.8002": imu_msg_pb2.Imu(
+        timestamp=47, accelerometer={"x": 0, "y": 0, "z": 1},
+        gyroscope={"x": .1, "y": .2, "z": .3}).SerializeToString()}
+    report = tmp_path / "usb.json"
+    assert main(["imu", "--count", "1", "--duration", "3", "--report", str(report)] + arguments) == 0
+    result = json.loads(report.read_text())["results"][0]
+    assert result["address"] == "usb://test-usb/8002" and result["frames"] == 1
+    assert result["status"] == "received"
+    assert result["last_values"]["accelerometer"] == [0, 0, 1]
 
 
 @pytest.mark.parametrize("name", list(asmagic.STREAMS) + ["face_hand", "body-arkit", "body-mediapipe", "claw2"])

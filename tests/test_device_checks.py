@@ -113,3 +113,43 @@ def test_guided_quit_marks_unexecuted_streams_in_report(monkeypatch, tmp_path):
     assert len(results) == len(TEST_STREAMS)
     assert results[0]["status"] == "skipped"
     assert all(item["status"] == "not_run" for item in results[1:])
+
+
+def test_usb_inventory_and_watch_guidance_do_not_describe_computer_http(capsys):
+    assert main(["--list", "--transport", "usb"]) == 0
+    output = capsys.readouterr().out
+    assert "TCP" not in output
+    assert "USB watch relay 8002" in output and "18002" in output
+    assert "face_hand | legacy" in output
+    assert "face_hand" not in TEST_STREAMS
+
+
+def test_guided_usb_sequence_routes_every_current_stream_and_watch(monkeypatch, tmp_path):
+    from types import SimpleNamespace
+    calls = []
+    receiver = SimpleNamespace(address="usb://test-usb/8002", close=lambda: None)
+    monkeypatch.setattr("asmagic.cli.sys.stdin", SimpleNamespace(isatty=lambda: True))
+    monkeypatch.setattr("builtins.input", lambda prompt: "")
+
+    def subscribe(name, ip, **options):
+        calls.append((name, options))
+        assert options["transport"] == "usb" and options["udid"] == "test-usb"
+        return receiver
+
+    def watch(host, port, **options):
+        assert host == "usb:test-usb" and port == 8002
+        calls.append(("watch", options))
+        return receiver
+
+    monkeypatch.setattr("asmagic.cli.subscribe", subscribe)
+    monkeypatch.setattr("asmagic.cli.WatchIMUReceiver", watch)
+    monkeypatch.setattr("asmagic.cli.run_stream_check", lambda name, sub, **opts:
+                        StreamTestResult(name, sub.address, status="received", frames=1))
+    report = tmp_path / "all-usb.json"
+    assert main(["--all", "--transport", "usb", "--udid", "test-usb", "--report", str(report)]) == 0
+    assert len(calls) == len(TEST_STREAMS)
+    assert [(name, opts.get("model")) for name, opts in calls if name == "body"] == [
+        ("body", "arkit"), ("body", "mediapipe")]
+    assert any(name == "claw" and opts.get("port") == 5401 for name, opts in calls)
+    results = json.loads(report.read_text())["results"]
+    assert [result["stream"] for result in results] == list(TEST_STREAMS)

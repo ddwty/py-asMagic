@@ -1,6 +1,6 @@
 # Data Format and API
 
-These signatures describe SDK **1.0.2**. Every linked example is a complete standalone Python file copied into its documentation page. See the [example index](index.md) for installation and manual runs.
+These signatures describe SDK **1.1.0**. Chapter examples are exact copies of GitBook code. See the [example index](index.md) for installation and manual runs.
 
 ## Choose the receiving class
 
@@ -18,9 +18,9 @@ Import classes from `asmagic`. Basic AR examples use `ARDataSubscriber(ip)`; the
 | `BodyPoseDataSubscriber` | 8010 | `BodyPoseFrame` | [2D upper body](upper_body.md) |
 | `HandPoseDataSubscriber` | 8101 | `HandPoseFrame` | [Hands](hand.md) |
 | `FaceDataSubscriber` | 8102 | `FaceFrame` | [Face](face.md) |
-| `ClawDataSubscriber` | 5301 | `ClawFrame` | [Grippers](claw.md); pass `port=5401` for the second |
+| `ClawDataSubscriber` | 5301 | `ClawFrame` | Pass `port=5401` for the second |
 
-`ip` is the sender's IP/hostname, without `tcp://`. `hwm` is a positive queue limit; `conflate=True` keeps the latest pending message. Set `conflate=False` to retain queued messages up to the configured limits; this still does not guarantee lossless capture. `verbose=True` enables connection/decode diagnostics. Opening a receiver does not enable the App output.
+`ip` is the sender's IP/hostname without `tcp://`, `"usb"`, or `"usb:DEVICE_UDID"`. `hwm` is a positive queue limit; `conflate=True` keeps the latest pending message. Set `conflate=False` to retain queued messages up to the configured limits; this still does not guarantee lossless capture. `verbose=True` enables connection/decode diagnostics. Opening a receiver does not enable the App output.
 
 ## Unified receiving pattern
 
@@ -28,15 +28,15 @@ Use `sub = Class(...)`, then `try: while True: frame = sub.receive()`, and call 
 
 ## Shared ZeroMQ receiving methods
 
-| API | Return / behavior | Example |
-|---|---|---|
-| `receive()` | Wait for one valid frame; closed receivers raise `StopIteration` | [Continuous AR](ar.md) |
-| `receive(timeout=1000)` | Valid typed frame or `None` on timeout; StopIteration on closure | [Options and timeouts](common.md#example-1-receiving-with-a-timeout-and-status) |
-| `for frame in sub` | Wait and yield frames until closed or interrupted | Supported compatibility API |
-| `stream(timeout=1000, on_frame=None, *, plot=False, plot_options=None)` | Generator; callback and plot use the same yielded frame | [Processing function](common.md#example-2-process-a-received-frame), [body plot](body.md#example-4-display-all-people-in-separate-skeleton-panels) |
-| `Class.decode(payload: bytes)`; body: `BodyTrackingFrame.from_bytes(payload, model=...)` | Decode a specified native schema without a socket; malformed data raises an exception | [Save and offline decode](common.md#example-6-decode-a-saved-typed-frame-without-a-socket) |
-| `with Class(...) as sub` | Close the receiver on leaving the block | Supported compatibility API |
-| `close()` | Cleanup in finally; safe to call again | [Cleanup](common.md#example-1-receiving-with-a-timeout-and-status) |
+| API | Return / behavior |
+|---|---|
+| `receive()` | Wait for one valid frame; closed receivers raise `StopIteration` |
+| `receive(timeout=1000)` | Valid typed frame or `None` on timeout; StopIteration on closure |
+| `for frame in sub` | Wait and yield frames until closed or interrupted |
+| `stream(timeout=1000, on_frame=None, *, plot=False, plot_options=None)` | Generator; callback and plot use the same yielded frame |
+| `Class.decode(payload: bytes)`; body: `BodyTrackingFrame.from_bytes(payload, model=...)` | Decode a specified native schema without a socket; malformed data raises an exception |
+| `with Class(...) as sub` | Close the receiver on leaving the block |
+| `close()` | Cleanup in finally; safe to call again |
 
 Timeout units are integer **milliseconds**: `0` polls immediately, `-1` or `None` waits indefinitely, positive values bound the wait for valid data. Iteration and `stream()` keep waiting after timeouts; they do not yield `None`. AR decode errors raise `RuntimeError`; other typed receivers skip recoverable decode failures within the same timeout budget and expose the error in `last_error` until valid data arrives. A received empty tracking frame is still a frame.
 
@@ -51,9 +51,7 @@ Read multiple fields from one received frame to keep them aligned. JPEG array de
 | `last_received_at` | Local `time.monotonic()` receipt time or `None`; not sender observation time |
 | `last_error` | Most recent decode error string, reset on a successful frame, or `None` |
 
-All attributes are used in the [status example](common.md#example-1-subscriber-options-timeouts-status-and-automatic-cleanup).
-
-`connect(ip, port=8000, **kwargs)` is an AR subscriber context manager. `subscribe(stream, ip, **kwargs)` creates the named typed receiver. `STREAMS` contains the ten ZeroMQ names and `StreamInfo.subscriber`, `.port`, `.message`, `.feature`. See [frame fields](ar.md#example-6-read-image-and-pose-fields) and [factory](common.md#example-3-discover-streams-and-subscribe-by-name).
+`connect(ip, port=8000, **kwargs)` is an AR subscriber context manager. `subscribe(stream, ip, **kwargs)` creates the named typed receiver. `STREAMS` contains the ten ZeroMQ names and `StreamInfo.subscriber`, `.port`, `.message`, `.feature`. See [frame fields](ar.md).
 
 ## Camera-only frame
 
@@ -70,7 +68,7 @@ The same HEVC continuity, queue and reset behavior described above applies to th
 
 ## AR frame and methods
 
-RGB, depth, confidence, poses, intrinsics and frame information are printed in [AR example 1](ar.md#example-1-continuous-ar-data-reading).
+RGB, depth, confidence, poses, intrinsics and frame information are printed in [AR example 1](ar.md).
 
 | Field / property | Type / meaning |
 |---|---|
@@ -103,10 +101,9 @@ RGB, depth, confidence, poses, intrinsics and frame information are printed in [
 | `show_depth(window_name="Depth Image", colormap=None)` | Colorized OpenCV depth preview; default JET; boolean result |
 | `show_images(show_color=True, show_depth=True, color_window="Color Image", depth_window="Depth Image")` | `(color_displayed, depth_displayed)` booleans; false switches disable each window |
 
-`frame.show_images()` displays both available images by default. Use `show_depth=False` or `show_color=False` to disable an image. See [images](ar.md#example-2-optionally-display-color-and-depth) and [matrices](ar.md#example-4-positions-quaternions-and-matrices). Image display uses `cv2.waitKey()` and `cv2.destroyAllWindows()`. The color array is RGB; OpenCV drawing expects BGR. Malformed image/depth bytes can raise when an array is decoded.
+`frame.show_images()` displays both available images by default. Use `show_depth=False` or `show_color=False` to disable an image. See [images](ar.md) and [matrices](ar.md). Image display uses `cv2.waitKey()` and `cv2.destroyAllWindows()`. The color array is RGB; OpenCV drawing expects BGR. Malformed image/depth bytes can raise when an array is decoded.
 
-
-Read all fields from one received frame, as in [AR example 1](ar.md#example-1-continuous-ar-data-reading).
+Read all fields from one received frame, as in [AR example 1](ar.md).
 
 ### AR Pose Format
 
@@ -127,7 +124,7 @@ In the App's Original coordinate mode, X points right, Y up, and Z backward; the
 
 ## IMU and AirPods
 
-`IMUFrame.timestamp` is sender seconds. Received vectors retain their original three-element NumPy arrays and four-element `attitude`. An omitted sensor has the original zero fallback with `has_*` false; a received zero measurement has `has_*` true. The [all-sensors example](imu.md#example-1-read-all-available-imu-sensors) prints all sensor fields.
+`IMUFrame.timestamp` is sender seconds. Received vectors retain their original three-element NumPy arrays and four-element `attitude`. An omitted sensor has the original zero fallback with `has_*` false; a received zero measurement has `has_*` true. The [all-sensors example](imu.md) prints all sensor fields.
 
 | IMU field | Shape / unit | Presence property |
 |---|---|---|
@@ -138,7 +135,7 @@ In the App's Original coordinate mode, X points right, Y up, and Z backward; the
 | `user_acceleration` | 3, G | `has_user_acceleration` |
 | `attitude` | 4, x/y/z/w, old senders only | `has_attitude` |
 
-The current iPhone IMU sender omits attitude. Check `has_*` before using a reading. Read all fields from one received frame in the [IMU example](imu.md#example-1-read-all-available-imu-sensors). `protobuf` retains the original message.
+The current iPhone IMU sender omits attitude. Check `has_*` before using a reading. Read all fields from one received frame in the [IMU example](imu.md). `protobuf` retains the original message.
 
 `AirPodsFrame.timestamp` is the Float32 source value; it is not a precise synchronized Unix time. `rotation` is a NumPy quaternion `[qx, qy, qz, qw]` (or an empty array), not Euler angles. `protobuf` retains the message. [Complete example](airpods.md).
 
@@ -165,7 +162,6 @@ Named controls and original numbered fields are shown on the [Joystick page](../
 | `system_buttons` | Optional `menu`, `options`, `home`, `touchpad` |
 | `motion` | Optional `sensors_active`, `gravity`, `user_acceleration`, `rotation_rate` (x/y/z), `attitude` (x/y/z/w) |
 | `protobuf` | Generated message |
-
 
 ## Body tracking: ARKit and MediaPipe
 
@@ -219,7 +215,7 @@ Every field is demonstrated on the [Hand page](hand.md). Joint mappings are in t
 
 `HandJointName` is a string enum with `.value` and `.row`. `HAND_JOINT_NAMES` lists all 21 names. `Hand.as_arrays()` returns `HandJointArrays(names, points, confidences, valid)`: `names` is `Tuple[str, ...]`; the other fields are NumPy arrays, with `points.shape == (21, 2)` and dtype `float32`, `confidences.shape == (21,)` and dtype `float32`, and `valid.shape == (21,)` and dtype `bool`. The first 21 rows are fixed; future names append alphabetically, increasing the row count to N. Missing points and confidences are NaN, `valid=False`. Presence and confidence filtering are separate. Use a new export after changing dictionaries; arrays are independent snapshots.
 
-All hand coordinates are raw normalized image points, left-top origin, X right / Y down. They are **not 3D hand joints**. Left/right reflect the sender's anatomical side, independent of preview mirroring or screen position. The [hand guide with joint and reading diagrams](../hands.md) defines every node. See [all joints](hand.md#example-1-read-all-joints-from-both-hands), [typed/pixel access](hand.md#example-2-named-hand-joints-enums-and-raw-pixels) and [display switch](hand.md#example-3-enable-or-disable-both-hand-skeletons).
+All hand coordinates are raw normalized image points, left-top origin, X right / Y down. They are **not 3D hand joints**. Left/right reflect the sender's anatomical side, independent of preview mirroring or screen position. The [hand guide with joint and reading diagrams](../hands.md) defines every node. See [all joints](hand.md), [typed/pixel access](hand.md) and [display switch](hand.md).
 
 ## Face-only frame
 
@@ -254,32 +250,32 @@ The wire field `blendshape_coefficients` is a repeated list of `FaceBlendshapeCo
 
 `FaceLandmark.index` is a Python `int`, `.region` is `str`, `.image_x` and `.image_y` are Python `float`, and `.position_face_meters` is float32 `(3,)` or `None`. TrueDepth indices are mesh vertex IDs; Vision indices are local to a region and can repeat. `FaceImageLocation.center_x`, `.center_y`, `.width` and `.height` are Python `float` in raw normalized image coordinates.
 
-Face-local +X points to the viewer's right (the face's own left), +Y points up relative to the face, and +Z points out of the face. Camera axes are X right, Y up and −Z forward. For TrueDepth, transform a face-local point with `R(camera_orientation) @ point + camera_position_meters`. Vision has an estimated quaternion but no metric translation. [Mesh and camera conversion](face.md#example-3-metric-face-vertices-and-triangle-topology).
+Face-local +X points to the viewer's right (the face's own left), +Y points up relative to the face, and +Z points out of the face. Camera axes are X right, Y up and −Z forward. For TrueDepth, transform a face-local point with `R(camera_orientation) @ point + camera_position_meters`. Vision has an estimated quaternion but no metric translation. [Mesh and camera conversion](face.md).
 
 ## Gripper
 
-`ClawFrame.timestamp` is Float32 source time; `.angle` is the App percent command, `.motor` is a generated motor message or `None`, `.protobuf` is the complete generated message. The motor fields are `angle`, `angle_percent`, `speed`, `iq`, `temperature`; values are preserved as transmitted. See [first and second gripper examples](claw.md). No robot-control send method is implemented by these receiving classes.
+`ClawFrame.timestamp` is Float32 source time; `.angle` is the App percent command, `.motor` is a generated motor message or `None`, `.protobuf` is the complete generated message. The motor fields are `angle`, `angle_percent`, `speed`, `iq`, `temperature`; values are preserved as transmitted. Use `asmagic-test claw --transport usb` or `asmagic-test claw2 --transport usb` to check reception. No robot-control send method is implemented by these receiving classes.
 
 ## Watch HTTP
 
-`WatchIMUReceiver(host="127.0.0.1", port=8002, conflate=True, max_batches=32, payload_format="batch", verbose=False)` starts an HTTP server on this computer. Use `host="0.0.0.0"` for LAN IPv4 clients; configure the Watch with this computer's reachable address, not the bind wildcard. `port=0` selects a free port. `payload_format` is `batch` (current), `single` (timestamped sample) or `legacy` (no timestamp). `conflate` selects latest-batch vs bounded queuing. Samples inside a retained batch are preserved.
+`WatchIMUReceiver(host="127.0.0.1", port=8002, conflate=True, max_batches=32, payload_format="batch", verbose=False)` starts an HTTP server on this computer. Use `host="usb"` for iPhone USB relay (Watch sends to the iPhone over HTTP port 18002). Use `host="0.0.0.0"` for LAN IPv4 clients; configure the Watch with this computer's reachable address, not the bind wildcard. `port=0` selects a free port. `payload_format` is `batch` (current), `single` (timestamped sample) or `legacy` (no timestamp). `conflate` selects latest-batch vs bounded queuing. Samples inside a retained batch are preserved.
 
-| API / member | Meaning / return | Example |
-|---|---|---|
-| `receive()` | Wait for a WatchBatch; closed receivers raise StopIteration | [Batches](watch.md) |
-| `receive(timeout=1000)` | `WatchBatch` or `None` on timeout; same timeout and closure behavior as ZeroMQ | [Batches](watch.md#example-1-receive-watch-http-batches-continuously) |
-| Iteration | Yield batches until closed/interrupted | [Method selection](watch.md#example-3-watch-iteration-stream-callback-and-raw-protobuf) |
-| `stream(timeout=1000, on_frame=None, *, plot=False, plot_options=None)` | Yield batches; callback receives that same batch; plot=True is unsupported | [Callback](watch.md#example-3-watch-iteration-stream-callback-and-raw-protobuf) |
-| `iter_samples(timeout=1000)` | Flatten retained batches into `WatchFrame` samples | [Samples](watch.md#example-2-flatten-batches-into-individual-watch-samples) |
-| `decode(payload)` | Instance method; parse selected schema into `WatchBatch` without dequeuing | [Formats and decode](watch.md#example-4-select-watch-payload-format-and-decode-a-batch) |
-| `with receiver`, `close()` | Shutdown server and wake pending receive calls; examples close in finally | Every Watch example |
+| API / member | Meaning / return |
+|---|---|
+| `receive()` | Wait for a WatchBatch; closed receivers raise StopIteration |
+| `receive(timeout=1000)` | `WatchBatch` or `None` on timeout; same timeout and closure behavior as ZeroMQ |
+| Iteration | Yield batches until closed/interrupted |
+| `stream(timeout=1000, on_frame=None, *, plot=False, plot_options=None)` | Yield batches; callback receives that same batch; plot=True is unsupported |
+| `iter_samples(timeout=1000)` | Flatten retained batches into `WatchFrame` samples |
+| `decode(payload)` | Instance method; parse selected schema into `WatchBatch` without dequeuing |
+| `with receiver`, `close()` | Shutdown server and wake pending receive calls; examples close in finally |
 | `host`, `port`, `address` | Bound interface / actual port / HTTP endpoint |
 | `payload_format` | Chosen input schema |
 | `is_connected`, `has_received_data` | Server open / ever received a valid batch |
 | `received_frames`, `dropped_batches` | Received batch count / discarded batch count |
 | `last_received_at`, `last_error` | Local monotonic receipt time / validation error or `None` |
 
-`WatchBatch.frames` is a tuple of `WatchFrame`, `.batch_timestamp` and `.timestamp` are aliases, `.frame_count` is the batch's count, `.protobuf` is its source message. `WatchFrame` fields are `timestamp` (sender seconds; legacy 0), `attitude` (x/y/z/w), `rotation_rate` (rad/s), `gravity` (G), `acceleration` (user acceleration in G), and `protobuf`. Vector fields are NumPy arrays. The actual current App sends G directly despite older schema comments saying m/s². [All sample fields](watch.md#example-1-receive-watch-http-batches-continuously).
+`WatchBatch.frames` is a tuple of `WatchFrame`, `.batch_timestamp` and `.timestamp` are aliases, `.frame_count` is the batch's count, `.protobuf` is its source message. `WatchFrame` fields are `timestamp` (sender seconds; legacy 0), `attitude` (x/y/z/w), `rotation_rate` (rad/s), `gravity` (G), `acceleration` (user acceleration in G), and `protobuf`. Vector fields are NumPy arrays. The actual current App sends G directly despite older schema comments saying m/s².
 
 ## Plotting API
 
@@ -287,23 +283,22 @@ Supported objects: `BodyTrackingFrame`, `BodyPoseFrame`, `HandPoseFrame`, `FaceF
 
 | API | Behavior / example |
 |---|---|
-| `sub.stream(..., plot=True, plot_options={...})` | Draw the same frame yielded; close window on generator close. Use `contextlib.closing` when breaking early. See body, upper-body, hand and face/hand optional plot examples. |
-| `frame.plot(enabled=True, plotter=None, **options)` | Return a reusable plotter; disabled returns `None`. [Single-frame API](plotting.md#example-2-frameplot-or-plot_tracking-with-a-shared-window) |
-| `hand.plot(enabled=True, plotter=None, **options)` | Same API for one hand. [Single-hand example](plotting.md#example-3-plot-a-single-hand-object) |
-| `plot_tracking(frame, enabled=True, plotter=None, **options)` | Exported function equivalent to `.plot()`. [Function example](plotting.md#example-2-frameplot-or-plot_tracking-with-a-shared-window) |
-| `TrackingPlotter(space="body", labels=False, max_fps=30, stale_after=2.0, min_confidence=0.0)` | Lazy reusable window. `"body"`/`"world"` accepted; `"parent"` rejected because parent origins differ. [Manual viewer](plotting.md#example-1-receive-frames-with-an-optional-trackingplotter) |
+| `sub.stream(..., plot=True, plot_options={...})` | Draw the same frame yielded; close window on generator close. Use `contextlib.closing` when breaking early. See the [body](body.md) and [hand](hand.md) plotting examples. |
+| `frame.plot(enabled=True, plotter=None, **options)` | Return a reusable plotter; disabled returns `None`. |
+| `hand.plot(enabled=True, plotter=None, **options)` | Same API for one hand. |
+| `plot_tracking(frame, enabled=True, plotter=None, **options)` | Exported function equivalent to `.plot()`. |
+| `TrackingPlotter(space="body", labels=False, max_fps=30, stale_after=2.0, min_confidence=0.0)` | Lazy reusable window. `"body"`/`"world"` accepted; `"parent"` rejected because parent origins differ. |
 | `HandTrackingWindow(labels=True, max_fps=30, stale_after=2.0, min_confidence=0.0)` | Open anatomical L/R panels; `update(HandPoseFrame)` or `update(None)` on timeouts |
 | `update(frame, force=False)` | Update using an already received frame; return self; no data receive/mutation. `force=True` bypasses draw throttling. |
 | `idle()` | Process events and clear old data after `stale_after` during timeouts |
 | `is_open` | Window still open, or lazy viewer awaiting its first update |
-| `save(path, **savefig_options)` | Save current figure after its first update. [Headless snapshot](plotting.md#example-4-save-a-real-received-skeleton-without-a-window) |
+| `save(path, **savefig_options)` | Save current figure after its first update. |
 | `close()`, context manager | Window cleanup |
 | `space`, `labels`, `max_fps`, `stale_after` | Configured coordinate space / node labels / drawing FPS / stale seconds |
-| `figure`, `axes` | Matplotlib figure (initially `None`) and axes list for custom styling after the first update; see the headless snapshot example |
+| `figure`, `axes` | Matplotlib figure (initially `None`) and axes list for custom styling after the first update |
 
 One plotter accepts one kind of object. Set options at creation; supplying both an existing plotter and new options to `.plot()` / `plot_tracking()` raises `ValueError`. Do not create a new plotter every frame. BODY plots show model-space meters and real parent edges; WORLD plots require world metadata. Hands use anatomical separate panels with raw 2D coordinates, confidence coloring and no links across missing nodes. Face/hand plots add raw face landmarks. Upper-body plots accumulate relative vectors and use available detection metadata. Drawing limits affect visualization only, not the sender's configured frame rate.
 
 ## Generic and legacy schemas
-
 
 `asmagic.proto` includes the generated camera, IMU, controller, AirPods, body, upper-body, hand, face/hand, gripper and Watch schemas. Raw payloads require matching schemas and transports. This SDK does not convert separate JSON/UDP/robot-command/control protocols into these Protobuf streams.
