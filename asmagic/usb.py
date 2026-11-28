@@ -147,10 +147,13 @@ def _extract(buffer):
         total = 8 + header_size + payload_size
         if len(buffer) < total:
             break
-        header = json.loads(bytes(buffer[8:8 + header_size]))
+        payload_start = FRAME_HEADER.size + header_size
+        header = json.loads(buffer[FRAME_HEADER.size:payload_start])
         if not isinstance(header, dict) or header.get("v") != 1:
             raise ValueError("Unsupported USB protocol version")
-        packets.append(USBPacket(header, bytes(buffer[8 + header_size:total])))
+        with memoryview(buffer) as view:
+            payload = bytes(view[payload_start:total])
+        packets.append(USBPacket(header, payload))
         del buffer[:total]
     return packets
 

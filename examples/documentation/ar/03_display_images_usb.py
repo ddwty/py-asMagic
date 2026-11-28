@@ -5,7 +5,7 @@ IPHONE_IP = "usb"  # Use usb:DEVICE_UDID to select a specific iPhone.
 
 
 def main(ip=IPHONE_IP):
-    sub = ARDataSubscriber(ip)
+    sub = ARDataSubscriber(ip, conflate=True)
     try:
         while True:
             frame = sub.receive()

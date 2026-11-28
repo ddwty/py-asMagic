@@ -1,9 +1,11 @@
 """Camera-only frames share the proven AR RGB codec and receive path."""
+from collections import deque
 import inspect
 import io
 import json
 from pathlib import Path
 import threading
+from types import SimpleNamespace
 
 import numpy as np
 from PIL import Image
@@ -11,6 +13,7 @@ import pytest
 
 import asmagic
 from asmagic import ARDataSubscriber, CameraDataSubscriber, CameraFrame, subscribe
+from asmagic._ar_receiver import ARReceiverPump, _trim_preview_backlog
 from asmagic.diagnostics import inspect_frame, run_stream_check
 from asmagic.proto import phone_msg_pb2
 from test_images_geometry import hevc_sequence
@@ -134,6 +137,80 @@ def test_camera_hevc_reference_continuity_and_decoded_conflation(publisher, hevc
     frame = sub.receive(timeout=2000)
     assert frame.frame_id == 8 and frame._decoded_video_frame is not None
     assert np.abs(frame.image.astype(float) - expected[7]).mean() < 10
+
+
+def test_preview_catches_up_only_at_a_valid_hevc_keyframe(hevc_sequence):
+    messages, _ = hevc_sequence
+    for message in messages:
+        message.source_timestamp = 12.0 + message.frame_id / 30
+    frames = [CameraDataSubscriber.decode(message.SerializeToString()) for message in messages]
+    frames[5].rgb_is_key_frame = True  # Metadata alone cannot restart the decoder.
+    frames[6].rgb_is_key_frame = True
+    frames[6].color_img = b"\xff"
+    brief_stall = deque(frames[3:6])
+    assert not _trim_preview_backlog(brief_stall)
+    assert [frame.frame_id for frame in brief_stall] == [4, 5, 6]
+
+    backlog = deque(frames)
+    assert _trim_preview_backlog(backlog)
+    assert [frame.frame_id for frame in backlog] == [5, 6, 7, 8]
+
+
+@pytest.mark.parametrize("conflate, expected_ids", [(False, [1, 5]), (True, [5])])
+def test_receiver_keeps_first_packet_in_new_usb_generation(hevc_sequence, conflate, expected_ids):
+    messages, _ = hevc_sequence
+
+    class WireReceiver:
+        def __init__(self, *args):
+            self._usb = SimpleNamespace(generation=0)
+            self.frames = deque(CameraDataSubscriber.decode(messages[index].SerializeToString())
+                                for index in (0, 4))
+            self.received_frames = 0
+            self.last_received_at = self.last_error = None
+            self.idle = threading.Event()
+
+        def get_frame(self, timeout):
+            if not self.frames:
+                self.idle.wait(timeout / 1000)
+                return None
+            frame = self.frames.popleft()
+            self.received_frames += 1
+            self._usb.generation = self.received_frames - 1
+            return frame
+
+        def close(self):
+            pass
+
+    pump = ARReceiverPump("usb", 8105, 32, conflate, False, subscriber_type=WireReceiver)
+    try:
+        frames = [pump.get(timeout=2000) for _ in expected_ids]
+        assert [frame.frame_id for frame in frames] == expected_ids
+        assert all(frame.image is not None for frame in frames)
+    finally:
+        pump.close()
+
+
+@pytest.mark.parametrize("rotation", [0, 1, 2, 3])
+def test_camera_hevc_preview_displays_bgr_at_the_configured_rotation(
+        publisher, hevc_sequence, monkeypatch, rotation):
+    cv2 = pytest.importorskip("cv2")
+    socket, connect = publisher
+    sub = connect(CameraDataSubscriber)
+    messages, _ = hevc_sequence
+    message = messages[0]
+    message.image_rotation_quarter_turns_clockwise = rotation
+    socket.send(message.SerializeToString())
+    frame = sub.receive(timeout=2000)
+    shown = []
+    monkeypatch.setattr(cv2, "imshow", lambda name, image: shown.append((name, image)))
+    assert frame.show_image("preview")
+    assert frame._decoded_color is None
+    assert shown[0][0] == "preview"
+    np.testing.assert_equal(shown[0][1], np.rot90(frame.image, -rotation)[..., ::-1])
+
+    frame.image[:] = (200, 100, 50)
+    assert frame.show_image("preview")
+    np.testing.assert_equal(shown[1][1], frame.image_upright[..., ::-1])
 
 
 def test_camera_hevc_resets_on_lens_restart_format_change_and_codec_change(publisher, hevc_sequence, jpeg_message):

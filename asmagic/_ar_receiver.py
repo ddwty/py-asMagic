@@ -2,10 +2,42 @@
 from collections import deque
 import threading
 
-from ._images import HEVCDecoder
+from ._images import HEVCDecoder, has_hevc_random_access_picture, nal_units
 from ._subscriber import Subscriber
 from .decoders import ar_frame
 from .proto import phone_msg_pb2
+
+
+_PREVIEW_BACKLOG_SECONDS = 0.1
+_PREVIEW_MAX_BATCH = 32
+
+
+def _trim_preview_backlog(frames):
+    """Skip the outdated prefix only when a new independent picture is ready."""
+    start = frames[0].source_timestamp
+    if not (start > 0 and frames[-1].source_timestamp - start >= _PREVIEW_BACKLOG_SECONDS):
+        return False
+    for index, frame in enumerate(reversed(frames)):
+        prefix = len(frames) - index - 1
+        if not prefix:
+            break
+        if not frame.has_color_image or frame.source_timestamp <= start:
+            continue
+        if frame.rgb_codec == 2:
+            if not frame.rgb_is_key_frame or not frame.rgb_codec_config:
+                continue
+            try:
+                units = list(nal_units(frame.color_img, frame.rgb_nal_unit_header_length or 4))
+            except ValueError:
+                continue
+            if not has_hevc_random_access_picture(units):
+                continue
+        elif frame.rgb_codec not in (0, 1):
+            continue
+        for _ in range(prefix):
+            frames.popleft()
+        return True
+    return False
 
 
 class _ARWireSubscriber(Subscriber):
@@ -15,12 +47,13 @@ class _ARWireSubscriber(Subscriber):
 
 
 class ARReceiverPump:
-    """One thread owns its socket and decoder; only decoded output may be replaced."""
+    """One thread owns its socket and ordered video decoder."""
 
     def __init__(self, ip, port, hwm, conflate, verbose,
                  subscriber_type=_ARWireSubscriber, thread_name="asmagic-ar-receiver"):
         self._condition = threading.Condition()
         self._pending = deque(maxlen=1 if conflate else hwm)
+        self._batch_size = min(hwm, _PREVIEW_MAX_BATCH) if conflate else 1
         self._stop = threading.Event()
         self._ready = threading.Event()
         self._startup_error = None
@@ -47,25 +80,43 @@ class ARReceiverPump:
         decoder = HEVCDecoder()
         try:
             # Create, poll, receive and close the ZeroMQ socket on this thread.
-            # Conflation belongs AFTER video decoding, never on encoded packets.
+            # Encoded frames keep their order. Preview recovery can restart at
+            # an independent image, without arbitrarily dropping reference packets.
             receiver = subscriber_type(ip, port, hwm, False, verbose)
             self.active = True
             self._ready.set()
-            usb_generation = 0
+            frames = deque()
+            read_error = None
+            transport = getattr(receiver, "_usb", None)
+            usb_generation = getattr(transport, "generation", 0)
             while not self._stop.is_set():
                 try:
-                    frame = receiver.get_frame(timeout=50)
-                    transport = getattr(receiver, "_usb", None)
-                    generation = getattr(transport, "generation", 0)
-                    if generation != usb_generation:
-                        decoder.reset()
-                        usb_generation = generation
-                    if frame is None:
+                    while read_error is None and len(frames) < self._batch_size and not self._stop.is_set():
+                        try:
+                            frame = receiver.get_frame(timeout=0 if frames else 50)
+                        except (RuntimeError, ValueError, ImportError, OSError) as error:
+                            read_error = error
+                            break
+                        generation = getattr(transport, "generation", 0)
+                        if generation != usb_generation:
+                            frames.clear()
+                            decoder.reset()
+                            usb_generation = generation
+                        if frame is None:
+                            break
+                        frames.append(frame)
+                    if not frames:
+                        if read_error is not None:
+                            error, read_error = read_error, None
+                            raise error
                         if transport is not None:
                             self.last_error = receiver.last_error
                         continue
                     self.received_frames = receiver.received_frames
                     self.last_received_at = receiver.last_received_at
+                    if len(frames) > 1 and _trim_preview_backlog(frames):
+                        decoder.reset()
+                    frame = frames.popleft()
                     if frame.rgb_codec == 2 and frame.has_color_image:
                         frame._decoded_video_frame = decoder.decode_frame(frame)
                         frame._decoded_color_key = frame._color_cache_key()

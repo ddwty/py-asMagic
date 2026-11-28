@@ -1,5 +1,6 @@
 """JPEG decoding and per-stream HEVC reference-frame continuity."""
 import io
+import os
 from typing import Optional
 import numpy as np
 
@@ -20,6 +21,10 @@ def nal_units(data: bytes, header_length: int):
             raise ValueError("Invalid HEVC NAL length")
         yield data[offset:offset + size]
         offset += size
+
+
+def has_hevc_random_access_picture(units) -> bool:
+    return any(unit and 16 <= ((unit[0] >> 1) & 0x3f) <= 21 for unit in units)
 
 
 class HEVCDecoder:
@@ -64,12 +69,16 @@ class HEVCDecoder:
         self._configuration = configuration
         self._frame_id = frame.frame_id
         # Inspect IRAP NAL types too, for saved frames without key-frame metadata.
-        is_key_frame = any(unit and 16 <= ((unit[0] >> 1) & 0x3f) <= 21 for unit in units)
+        is_key_frame = has_hevc_random_access_picture(units)
         if self._decoder is None:
             if not is_key_frame:
                 return None  # Join/recover at a key frame instead of showing grey concealment.
             self._decoder = av.CodecContext.create("hevc", "r")
             self._decoder.thread_count = 1
+            if frame.rgb_width * frame.rgb_height >= 1920 * 1080:
+                # Parallelize within a picture without buffering future frames.
+                self._decoder.thread_type = "SLICE"
+                self._decoder.thread_count = min(4, os.cpu_count() or 1)
             self._decoder.flags = int(self._decoder.flags) | _AV_CODEC_FLAG_LOW_DELAY
             self._decoder.options = {"err_detect": "explode"}
         annex_b = b"".join(b"\x00\x00\x00\x01" + unit
@@ -147,9 +156,25 @@ class ColorImage:
         return None if image is None else np.rot90(image, -(self.image_rotation_quarter_turns_clockwise % 4))
 
     def show_color(self, window_name: str = "Color Image") -> bool:
-        image = self.color_array
-        if image is None:
+        return self._show_color(window_name, upright=False)
+
+    def _show_color(self, window_name: str, upright: bool) -> bool:
+        if not self.has_color_image:
             return False
-        import cv2
-        cv2.imshow(window_name, cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
+        if self._decoded_video_frame is not None and self._decoded_color_key == self._color_cache_key():
+            import cv2
+            image = self._decoded_video_frame.to_ndarray(format="bgr24")
+            if upright:
+                rotation = self.image_rotation_quarter_turns_clockwise % 4
+                if rotation:
+                    rotations = (cv2.ROTATE_90_CLOCKWISE, cv2.ROTATE_180,
+                                 cv2.ROTATE_90_COUNTERCLOCKWISE)
+                    image = cv2.rotate(image, rotations[rotation - 1])
+        else:
+            image = self.color_upright if upright else self.color_array
+            if image is None:
+                return False
+            import cv2
+            image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+        cv2.imshow(window_name, image)
         return True

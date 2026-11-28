@@ -58,12 +58,7 @@ class CameraFrame(ColorImage):
         return self.color_upright
 
     def show_image(self, window_name: str = "Camera Image", upright: bool = True) -> bool:
-        image = self.image_upright if upright else self.image
-        if image is None:
-            return False
-        import cv2
-        cv2.imshow(window_name, cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
-        return True
+        return self._show_color(window_name, upright)
 
     def show_images(self, window_name: str = "Camera Image", upright: bool = True) -> bool:
         """Display this camera image; call cv2.waitKey() to process window events."""
