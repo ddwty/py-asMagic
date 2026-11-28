@@ -1,5 +1,5 @@
 """Receive asMagic protobuf streams with receive(), iteration and context managers."""
-__version__ = "1.1.0"
+__version__ = "1.2.0"
 __author__ = "ASMagic Team"
 
 from .arDataSubscriber import ARDataSubscriber, connect

@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.2.0 — 2026-11-28
+
+- Decode high-resolution HEVC in parallel within each picture and copy video
+  payloads less on Wi-Fi and USB. AR and Camera subscribers still deliver
+  buffered frames in order by default.
+- Convert OpenCV preview images directly to BGR. With `conflate=True`,
+  preview can catch up at a newer key frame when packets back up.
+- Sync the Network and USB examples with the GitBook guide.
+
 ## 1.1.0 — 2026-11-23
 
 - Add Watch HTTP-to-iPhone USB relay reception, all-stream USB decoder checks,

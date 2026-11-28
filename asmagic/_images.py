@@ -6,11 +6,13 @@ import numpy as np
 
 # FFmpeg's stable bit value; older supported PyAV releases omit its enum name.
 _AV_CODEC_FLAG_LOW_DELAY = 1 << 19
+_ANNEX_B_START_CODE = b"\x00\x00\x00\x01"
 
 
 def nal_units(data: bytes, header_length: int):
     if header_length not in (1, 2, 4):
         raise ValueError("HEVC NAL length-prefix size must be 1, 2 or 4")
+    view = memoryview(data)
     offset = 0
     while offset < len(data):
         if len(data) - offset < header_length:
@@ -19,7 +21,7 @@ def nal_units(data: bytes, header_length: int):
         offset += header_length
         if size == 0 or size > len(data) - offset:
             raise ValueError("Invalid HEVC NAL length")
-        yield data[offset:offset + size]
+        yield view[offset:offset + size]
         offset += size
 
 
@@ -36,6 +38,7 @@ class HEVCDecoder:
     def reset(self):
         self._decoder = None
         self._configuration = None
+        self._parameter_set_prefix = b""
         self._frame_id = 0
 
     def decode(self, frame):
@@ -81,8 +84,12 @@ class HEVCDecoder:
                 self._decoder.thread_count = min(4, os.cpu_count() or 1)
             self._decoder.flags = int(self._decoder.flags) | _AV_CODEC_FLAG_LOW_DELAY
             self._decoder.options = {"err_detect": "explode"}
-        annex_b = b"".join(b"\x00\x00\x00\x01" + unit
-                           for unit in list(frame.rgb_codec_config) + units)
+            self._parameter_set_prefix = b"".join(_ANNEX_B_START_CODE + unit for unit in configuration[0])
+        # Assemble the decoder packet once from views into the original payload.
+        parts = [self._parameter_set_prefix]
+        for unit in units:
+            parts.extend((_ANNEX_B_START_CODE, unit))
+        annex_b = b"".join(parts)
         try:
             decoded = self._decoder.decode(av.Packet(annex_b))
         except av.error.FFmpegError:

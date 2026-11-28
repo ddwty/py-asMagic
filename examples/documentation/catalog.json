@@ -167,7 +167,7 @@
       "block": 3,
       "transport": "network",
       "kind": "script",
-      "sha256": "b47a9b0cfa8945d462ebfba93a9166cf5a56f23c0d630ae335c5add5a327c892"
+      "sha256": "0936f9792af34b0398845689a228d83bc5134130ab2de2b97cdcea1573102aa5"
     },
     {
       "group": "ar",
@@ -176,7 +176,7 @@
       "block": 4,
       "transport": "usb",
       "kind": "script",
-      "sha256": "d28c86998465c1b59ed8c62ed9ef1e0791d243d72b3cc515b5f8d860d4c1b432"
+      "sha256": "b7610bb47db7a79dac359372d75b949ccb4a4395c9db852272018c02710dd105"
     },
     {
       "group": "ar",

@@ -5,7 +5,7 @@ IPHONE_IP = "192.168.1.100"  # Replace with your iPhone's IP address.
 
 
 def main(ip=IPHONE_IP):
-    sub = ARDataSubscriber(ip, conflate=True)
+    sub = ARDataSubscriber(ip)
     try:
         while True:
             frame = sub.receive()
